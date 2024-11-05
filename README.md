@@ -10,3 +10,12 @@
 ### Απαιτήσεις Hardware
 - Ampere architecture GPU
 - Minimum 15GB GPU RAM
+
+
+# Εικόνες
+
+### Chatbot UI
+![image](https://github.com/user-attachments/assets/78b1aa8f-97d8-4f48-9955-638ebf5d7bc0)
+
+### Responding to user questions
+![image](https://github.com/user-attachments/assets/59a3c635-afa2-45ef-8a84-f699a7a0e39b)
