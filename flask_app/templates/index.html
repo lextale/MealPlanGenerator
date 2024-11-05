@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with LLaMA</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="messenger-container">
+        <!-- Chat section -->
+        <div class="chat-container">
+            <div class="chat-header">
+                <div class="chat-user-info">
+                    <img src="https://www.shutterstock.com/image-vector/smiling-young-man-headphones-microphone-600nw-2213661961.jpg" alt="Avatar" id="avatar">
+                    <div class="chat-username">Chatbot Assistance</div>
+                </div>
+            </div>
+            <!-- Chat messages area -->
+            <div class="chat-messages" id="chatMessages">
+                <div class="message received">
+                    <div class="message-content">Hello</div>
+                </div>
+                <div class="message received">
+                    <div class="message-content">How could I help you?</div>
+                </div>
+            </div>
+
+            <!-- Chat input area -->
+            <form class="chat-input-container" id="chatForm">
+                <textarea id="messageInput" placeholder="Type a message..." rows="1"></textarea>
+                <button type="submit" class="send-button" id="sendButton">
+                    <span class="button-text">Send</span>
+                    <!--
+                    <i class="fas fa-spinner fa-spin hidden" id="buttonSpinner"></i>
+                    -->
+                    <span class="button-spinner hidden">
+                    </span>
+                   
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+
+</body>
+</html>
