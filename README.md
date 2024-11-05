@@ -19,3 +19,7 @@
 
 ### Απαντώντας σε ερωτήσεις χρηστών
 ![image](https://github.com/user-attachments/assets/59a3c635-afa2-45ef-8a84-f699a7a0e39b)
+
+
+# Run on Python Notebook
+[View the Notebook](https://github.com/lextale/thesisRepo/blob/main/thesisNotebook.ipynb)
