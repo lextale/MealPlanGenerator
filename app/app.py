@@ -12,8 +12,6 @@ from jsonformer import Jsonformer
 
 
 app = Flask(__name__)
-#tokenizer = None
-#model = None
 
 def auth():
     # Authorize ngrok
@@ -25,31 +23,6 @@ def auth():
     # HuggingFace Authentication
     login('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
 
-'''
-def loadLLM():
-    save_path = '/content/drive/MyDrive/Πτυχιακή Backup/Saved Models/Llama-2-7b-chat-hf'
-    if os.path.exists(save_path):
-        # Load the model and tokenizer from local
-        model = LlamaForCausalLM.from_pretrained(save_path)
-        tokenizer = LlamaTokenizer.from_pretrained(save_path)
-    else:
-        # Load model from hugging face
-        model_id = "meta-llama/Llama-2-7b-chat-hf"
-        tokenizer = LlamaTokenizer.from_pretrained(model_id, use_fast=True)
-        model = LlamaForCausalLM.from_pretrained(
-            model_id,
-            device_map="auto",
-            torch_dtype=torch.float16,
-            load_in_8bit=True
-        )
-    os.makedirs(save_path, exist_ok=True)
-    model.save_pretrained(save_path)
-    tokenizer.save_pretrained(save_path)
-'''
-
-def initialize():
-    auth()
-    #loadLLM()
 
 @app.before_request
 def before_request():
@@ -221,7 +194,6 @@ def getSubmitForm():
 
 if __name__ == '__main__':
     auth()
-    #loadLLM()
     
     save_path = '/content/Saved Models/Llama-2-7b-chat-hf'
     if os.path.exists(save_path):
