@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meal Results</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style-results.css') }}">
+</head>
+<body>
+
+<div class="container my-5">
+    <h1 class="text-center">Your Meal Plan</h1>
+    <div class="row">
+        <!-- Loop through each meal (breakfast, lunch, dinner) -->
+        {% for meal, data in results.items() %}
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title"><b>{{ data['mealName'] }}</b></h5>
+                    <h6 class="card-subtitle mb-2 text-muted">Calories: {{ ('%.2f'|format(data['calories']|float)).rstrip('0').rstrip('.') }} kcal</h6>
+                    <p class="card-text">
+                        <strong>Ingredients:</strong><br>
+                        <ul>
+                            {% for ingredient in data['ingredients'] %}
+                            <li>{{ ingredient }}</li>
+                            {% endfor %}
+                        </ul>
+                    </p>
+                    <p><strong>Preparation:</strong> {{ data['instructions'] }}</p>
+                    <p><strong>Cooking Time:</strong> {{ ('%.2f'|format(data['cookingTime']|float)).rstrip('0').rstrip('.') }} min</p>
+                    <p><strong>Macros:</strong><br>
+                        Protein: {{ ('%.2f'|format(data['macros']['protein']|float)).rstrip('0').rstrip('.') }} g<br>
+                        Carbs: {{ ('%.2f'|format(data['macros']['carbs']|float)).rstrip('0').rstrip('.') }} g<br>
+                        Fat: {{ ('%.2f'|format(data['macros']['fat']|float)).rstrip('0').rstrip('.') }} g
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div> 
+<!-- <a href="/">Go back to the form</a> -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</body>
+</html>
+
+    

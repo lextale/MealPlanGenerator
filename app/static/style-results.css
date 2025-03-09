@@ -1,0 +1,42 @@
+html {
+  background-color: rgba(158, 199, 176, 0.61);
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: rgb(204 218 190 / 6%);
+}
+
+h1 {
+    font-family: 'Arial', sans-serif;
+    color: #333;
+    text-shadow: 1.5px 1.5px #738477;
+    padding-bottom: 15px;
+}
+
+body {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #212529;
+    text-align: left;
+}
+
+.card-body {
+    -ms-flex: 1 1 auto;
+    flex: 1 1 auto;
+    min-height: 1px;
+    padding: 1.25rem;
+    background-color: whitesmoke;
+    border-radius: 10px;
+}
+
+.card {
+  border-radius: 10px;
+}
+
+.card-text {
+    font-size: 1.1rem;
+    padding-bottom: 1rem;
+}

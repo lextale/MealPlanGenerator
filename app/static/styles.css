@@ -1,0 +1,239 @@
+/* styles.css */
+
+/* Add some custom margin to the container */
+.container {
+    margin-top: 30px;
+}
+
+/* Style the card titles */
+.card-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+/* Add some padding to the meal preparation text */
+.card-text {
+    font-size: 1.1rem;
+    padding-bottom: 1rem;
+}
+
+/* Add a border and shadow effect to cards */
+.card {
+    border: 2px solid #f0f0f0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+/* Style the card subheading for calories */
+.card-subtitle {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Add custom font to headings */
+h1 {
+    font-family: 'Arial', sans-serif;
+    color: #333;
+    text-align: center;
+    text-shadow: 1.5px 1.5px #738477;
+}
+
+/* Style the ingredients list */
+ul {
+    list-style-type: square;
+    padding-left: 20px;
+}
+
+/* Add some padding to the body */
+body {
+    font-family: 'Arial', sans-serif;
+}
+
+.form-container {
+    background: rgb(248 248 247 / 84%);
+    border: 1px solid rgba(0, 0, 0, 0.09);
+    box-sizing: border-box;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    border-radius: 19px;
+    padding: 20px 55px;
+    overflow-y: scroll;
+    min-height: fit-content;
+    scrollbar-width: none;
+}
+
+.search-container {
+        width: 250px;
+        font-family: Arial, sans-serif;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+
+    .search-box {
+        width: 90%;
+        padding: 6px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        outline: none;
+        margin-bottom: 10px;
+    }
+
+    .checkbox-list {
+        max-height: 150px;
+        overflow-y: auto;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 10px;
+        margin-top: 10px;
+        display:contents;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .checkbox-list input {
+        accent-color: #007bff; /* Modern styling for checkboxes */
+    }
+/*
+    .checkbox-list label {
+    display: inline-block;
+    max-width: 200px;*//* Adjust width as needed *//*
+    word-wrap: break-word;
+    overflow-wrap: break-word;*/
+    
+  html {
+    background-color: #d7e5b9;
+  }
+
+.form-section-1 {
+    display: flex;
+}
+
+.form-section-2 {
+    display: grid;
+    /* flex-direction: row; */
+    /* width: 50%; */
+    /* grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); */
+    column-gap: 20px;
+    grid-template-columns: 1fr 1fr;
+}
+
+.form-section-column {
+    flex: 1;
+    /* background-color: lightgray; */
+    /* border: 1px solid black; */
+    text-align: center;
+    padding: 20px;
+    place-content: center;
+    /* overflow-x: overlay; */
+    width: 100%;
+    min-width: 25px;
+    align-content: end;
+}
+
+.form-section-column-checkboxes {
+    /* flex: 1; */
+    /* border: 1px solid black; */
+    text-align: start;
+    padding: 20px;
+    place-content: center;
+    align-content: start;
+    width: 100%;
+    /* border: 1px solid #ccc; */
+    /* border-radius: 5px; */
+}
+
+select#diet_type {
+    width: 100%;
+    max-width: fit-content;
+}
+
+input#age {
+    width: 100%;
+    max-width: 30px;
+}
+
+select#gender {
+    width: 100%;
+    max-width: fit-content;
+}
+
+html {
+    margin-left: 20px;
+    margin-right: 20px;
+    background-color: rgba(158, 199, 176, 0.61);
+}
+
+.form-checkboxes-section {
+    text-align: start;
+    border: 1px solid rgb(204 204 204 / 69%);
+    border-radius: 5px;
+    height: 360px;
+    background-color: white;
+    margin-block-start: 5px;
+    overflow-y: overlay;
+}
+
+.form-checkboxes-section input[type="checkbox"] {
+    vertical-align: text-bottom;
+    margin-right: 5px
+}
+
+.checkboxes-content {
+    text-align: start;
+}
+
+.backdrop {
+    display: none; /* Initially hidden */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+    z-index: 999; /* Make sure it's above other content */
+}
+
+.spinner-container {
+    background: rgb(248 248 247 / 84%);
+    border: 1px solid rgba(0, 0, 0, 0.09);
+    box-sizing: border-box;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    border-radius: 19px;
+    width: 100%;
+    height: 85vh;
+    padding: 20px 55px;
+    overflow-y: scroll;
+    min-height: fit-content;
+    scrollbar-width: none;
+    position: relative; /* Needed for proper overlay positioning */
+    text-align: center;
+}
+
+.loading-spinner {
+    border: 6px solid #f3f3f3;
+    border-top: 6px solid #3498db;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+@keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+input[type="submit"] {
+    font-size: x-large;
+    background-color: darkseagreen;
+    border-color: darkseagreen;
+    color: ghostwhite;    
+    font-weight: bold;
+    border-radius: 10px;
+    height: 50px;
+    width: 100%;
+}
