@@ -15,3 +15,23 @@
 <br><i>Εικόνα 3: Οθόνη αποτελέσματος</i><br><br>
 ![Εικόνα 4: Το app.py παράγει την διεύθυνση στην οποία διατίθεται η εφαρμογή](https://github.com/user-attachments/assets/bbd592e2-c1a1-4bfe-ae8e-311e09b60cc2)
 <br><i>Εικόνα 4: Το app.py παράγει την διεύθυνση στην οποία διατίθεται η εφαρμογή</i><br><br>
+
+
+### Δομή Αποθετηρίου
+<pre>
+📂 app
+├── 📂 static
+│   ├── 📄 script.js
+│   ├── 📄 style-results.css
+│   ├── 📄 styles.css
+├── 📂 templates
+│   ├── 📄 error.html
+│   ├── 📄 index.html
+│   ├── 📄 results.html
+├── 📄 Constants.py
+├── 📄 ConstantsStaticMethods.py
+├── 📄 Nutrition_App_Thesis_Alexandra_Paramytha.ipynb
+├── 📄 app-mock-response.py
+├── 📄 app.py
+├── 📄 README.md
+</pre>
