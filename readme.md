@@ -30,8 +30,9 @@
 │   ├── 📄 results.html
 ├── 📄 Constants.py
 ├── 📄 ConstantsStaticMethods.py
-├── 📄 Nutrition_App_Thesis_Alexandra_Paramytha.ipynb
 ├── 📄 app-mock-response.py
 ├── 📄 app.py
+├── 📄 Nutrition_App_Thesis_Alexandra_Paramytha.ipynb
 ├── 📄 README.md
+├── 📄 requirements.txt
 </pre>
