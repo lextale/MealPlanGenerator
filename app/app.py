@@ -1,3 +1,13 @@
+#####################################################################
+# @description       : Πτυχιακή Εργασία   
+# @author            : Αλεξάνδρα Παραμύθα                      
+# @last modified on  : 11-03-2025
+# * Modifications Log 
+# * Ver   Date         Author                  Modification
+# * 1.0   11-03-2025   Αλεξάνδρα Παραμύθα    Initial Version
+#####################################################################
+
+# Εισαγωγή απαραίτητων βιβλιοθηκών
 from flask import Flask, request, jsonify, render_template
 import torch
 from transformers import LlamaForCausalLM, LlamaTokenizer
@@ -11,26 +21,31 @@ import re
 from jsonformer import Jsonformer
 
 
-app = Flask(__name__)
+app = Flask(__name__) # Αρχικοποίηση Flask εφαρμογής για τη διαχείριση HTTP requests  
+
 
 def auth():
-    # Authorize ngrok
+    # Εξουσιοδότηση του ngrok με χρήση authentication token
     ngrok_auth_token = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
     
-    # Run the ngrok command to set the authtoken
+    # Εκτέλεση εντολής για ρύθμιση του ngrok authentication token
     os.system(f'ngrok authtoken {ngrok_auth_token}')
 
-    # HuggingFace Authentication
+    # Σύνδεση στο Hugging Face Hub για πρόσβαση στο μοντέλο
     login('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
 
-
+# Εκτελείται πριν από κάθε αίτημα για να διασφαλίσει ότι τα templates φορτώνονται ξανά αυτόματα
+# σε περίπτωση που θέλουμε να τροποιήσουμε αρχεία όπως html, css κτλ. χωρίς να 
+# εκτελέσουμε ξανά την εφαρμογή
 @app.before_request
 def before_request():
-    app.jinja_env.cache = None
-    app.jinja_env.auto_reload = True
-    app.config['TEMPLATES_AUTO_RELOAD'] = True
+    app.jinja_env.cache = None # Απενεργοποίηση της cache των templates
+    app.jinja_env.auto_reload = True # Ενεργοποίηση αυτόματης ανανέωσης των template
+    app.config['TEMPLATES_AUTO_RELOAD'] = True # Επιτρέπει την αυτόματη επαναφόρτωση των templates χωρίς restart
 
-# Home page
+# Φόρτωση Αρχικής Σελίδας (index.html)
+# Η σελίδα φορτώνεται με τη βοήθεια της βιβλιοθήκης Flask
+# Οι σταθερές περνούν δυναμικά στην index.html
 @app.route("/", methods=["GET"])
 def index():
      return render_template("index.html", 
@@ -43,11 +58,11 @@ def index():
                             micronutrientFocus=Constants.MICRONUTRIENT_FOCUS,
                             cookingDifficulty=Constants.COOKING_DIFFICULTY)
 
-# Receive user response from form submission
+# Η getSubmitForm() εκτελείται όταν ο χρήστης υποβάλει τη φόρμα
 @app.route('/submit', methods=['POST'])
 def getSubmitForm():
     try:
-        # Get form data
+        # Λήψη δεδομένων που εισήγαγε ο χρήστης
         gender = request.form.get("gender")
         age = request.form.get("age")
         diet_type = request.form.get("diet_type")
@@ -55,7 +70,7 @@ def getSubmitForm():
         allergies = request.form.getlist("allergies")  # Get list of selected allergies
         intolerances = request.form.getlist("intolerances")  # Get list of selected intolerances
 
-        # User Input
+        # Εμφάνιση Δεδομένων χρήστη
         print('Data retrived from user\n');
         print('Gender: '+gender);
         print('diet_type: '+diet_type);
@@ -63,6 +78,7 @@ def getSubmitForm():
         print('intolerances: '+str(intolerances));
         print('intolerances: '+str(intolerances));
 
+        # Προκαθορισμένη JSON δομή απαντήσεων για τροφοδοσία του Jsonformer
         json_schema = {
             "title": "MealPlan",
             "type": "object",
@@ -133,6 +149,7 @@ def getSubmitForm():
             },
         }
 
+        # Προσχέδιο προτροπής
         prompt = f"""
             You are a meal planner that provides to users a day meal plan in the form of json.
             The user's gender is {gender} and is {age} years old.
@@ -157,47 +174,36 @@ def getSubmitForm():
 
             The meal names should be realistic, ingredients should be commonly available, cookingTime must correspond to the time needed for cooking the meal  and macros should be reasonable. Ensure the JSON output follows the expected structure exactly without extra text."""
 
-        # Print Prompt
+        # Εμφάνιση προτροπής
         print('Prompt used: '+prompt);
-
-        # Replaced to set strict json response format
-        '''
-        # Tokenize input and generate response
-        input_ids = tokenizer(prompt, return_tensors="pt").to("cuda") #.input_ids.to(model.device)
-        output_ids = model.generate(
-            input_ids.input_ids,
-            max_length=1024,
-            num_return_sequences=1,
-            temperature=0.7,
-            top_p=0.9,
-            do_sample=True
-        )
-
-        response = tokenizer.decode(output_ids[0], skip_special_tokens=True)[len(prompt):]
-        '''
-
-        # Generate response
+        
+        # Δημιουργία αντικειμένου Jsonformer για παραγωγή δομημένης JSON εξόδου από το γλωσσικό μοντέλο
         jsonformer = Jsonformer(model, tokenizer, json_schema, prompt, max_string_token_length=3000)
+
+        # Κλήση του Jsonformer για τη δημιουργία JSON δεδομένων σύμφωνα με το καθορισμένο σχήμα
         response = jsonformer()
 
         # END TEST (to be deleted)
         print(f'Response generation ended at: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
 
+        # Εμφάνιση παραγόμενου αποτελέσματος
         print(response)
-        
-        return render_template("results.html", results=response) #return render_template("results.html", response=jsonify({"response": response}))
 
+        # Φόρτωση της σελίδας αποτελεσμάτων
+        return render_template("results.html", results=response)
+
+    # Διαχείριση σφαλμάτων με τη φόρτωση σελίδας σφάλματος
     except Exception as e:
         print(e)
         return render_template("error.html", error={"error": str(e)}) #return render_template("results.html", response=jsonify({"response": response}))
-        #return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    auth()
-    
+    auth() # Αυθεντικοποίηση για την χρήση Ngrok και HuggingFace
+
+    # Εάν το μοντέλο υπάρχει τοπικά το φορτώνουμε τοπικά
+    # Διαφορετικά φορτώνουμε το από το Hugging Face Hub
     save_path = '/content/Saved Models/Llama-2-7b-chat-hf'
     if os.path.exists(save_path):
-        # Load the model and tokenizer from local
         model = LlamaForCausalLM.from_pretrained(save_path)
         tokenizer = LlamaTokenizer.from_pretrained(save_path)
     else:
@@ -213,13 +219,15 @@ if __name__ == '__main__':
     os.makedirs(save_path, exist_ok=True)
     model.save_pretrained(save_path)
     tokenizer.save_pretrained(save_path)
+
+    # Ορισμός pad_token
     if tokenizer.pad_token is None:
       tokenizer.pad_token = tokenizer.eos_token
     
 
-    # Open a ngrok tunnel to the localhost port 5000
+    # Συνδέουμε το ngrok στην τοπική θύρα 5000 και παίρνουμε το δημόσιο URL όπου θα είναι προσβάσιμη η εφαρμογή
     public_url = ngrok.connect(5000).public_url
     print(f"Public URL: {public_url}")
 
-    # Run the Flask app
+    # Εκκίνηση της Flask εφαρμογής
     app.run()
