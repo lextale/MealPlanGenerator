@@ -9,10 +9,38 @@
 
 ### Ανάλυση Κώδικα
 #### app.py
+```
+app = Flask(__name__)
+```
+Δημιουργεί ένα στιγμιότυπο της κλάσης Flask και το εκχωρεί στο αντικείμενο <b>app</b>. Η παράμετρος <b>\_\_name\_\_</b> είναι σημαντική για την λειτουργία της flask εφαρμογής, διότι το Flask πρέπει να γνωρίζει από ποιο αρχείο εκτελείται η εφαρμογή, ώστε να μπορεί να βρει στατικά αρχεία, templates και να ρυθμίσει σωστά τις διαδρομές. Το αντικείμενο `a` χρησιμοποιείται στη συνέχεια για να ορίσουμε διαδρομές (routes), να ρυθμίσουμε παραμέτρους (settings) και να εκκινήσουμε τον διακομιστή (server).
+
+<br><br>
+
+```
+def auth():
+    # Εξουσιοδότηση του ngrok με χρήση authentication token
+    ngrok_auth_token = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+    
+    # Εκτέλεση εντολής για ρύθμιση του ngrok authentication token
+    os.system(f'ngrok authtoken {ngrok_auth_token}')
+
+    # Σύνδεση στο Hugging Face Hub για πρόσβαση στο μοντέλο
+    login('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+```
+    
+Η συνάρτηση `auth()`:
+- Εξουσιοδοτεί (Authenticate) το Ngrok, ώστε να μπορεί να δημιουργήσει δημόσια URL.
+- Εξουσιοδοτεί το Hugging Face Hub ώστε να έχουμε πρόσβαση στο κλειστό (gated) αποθετήριο που είναι διαθέσιμο το μοντέλο Llama-2-7b-chat-hf. Η άδεια χρήσης του μοντέλου έχει δοθεί κατόπιν αιτήματος μέσω της ειδικής φόρμας στο Hugging Face.
+
+Έχουμε δημιουργήσει Personal Access Tokens για την αυθεντικοποίηση των λογαριασμών που έχουν πρόσβαση στις παραπάνω υπηρεσίες.
+    
+
+<br><br>
 
 #### templates
 #### static
 #### Constants 
+Ορίζουμε μια σελίδα (/): Με @app.route('/'), καθορίζουμε τι θα εμφανιστεί όταν κάποιος επισκεφτεί τη σελίδα.
 
 ![Εικόνα 1: Φόρμα εισαγωγής παραμέτρων](https://github.com/user-attachments/assets/6c3cf485-cfaa-4c5d-bee0-bf4e3b4d15ca)
 <br><i>Εικόνα 1: Φόρμα εισαγωγής παραμέτρων</i><br><br>
