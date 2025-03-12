@@ -8,7 +8,7 @@
 <br><br>
 
 ### Ανάλυση Κώδικα
-#### app.py
+#### Το αντικείμενο app - app.py
 ```
 app = Flask(__name__)
 ```
@@ -16,6 +16,7 @@ app = Flask(__name__)
 
 <br><br>
 
+#### Η συνάρτηση auth() - app.py
 ```
 def auth():
     # Εξουσιοδότηση του ngrok με χρήση authentication token
@@ -36,6 +37,7 @@ def auth():
 
 <br><br>
 
+#### Συνάρτηση before_request() - app.py
 ```
 @app.before_request
 def before_request():
@@ -43,9 +45,13 @@ def before_request():
     app.jinja_env.auto_reload = True # Ενεργοποίηση αυτόματης ανανέωσης των template
     app.config['TEMPLATES_AUTO_RELOAD'] = True # Επιτρέπει την αυτόματη επαναφόρτωση των templates χωρίς restart
 ```
+ Ο decorator της Flask @app.before_request εκτελεί τη συνάρτηση before_request() πριν από κάθε request. Χρησιμοποιείται για την εκτέλεση ενεργειών που πρέπει να γίνουν πριν από κάθε HTTP request, όπως έλεγχοι ή ρυθμίσεις.
+ Η app.jinja_env.cache είναι η cache του Jinja2 (το template engine που χρησιμοποιεί η Flask. Θέτοντας την τιμή σε None, απενεργοποιούμε την cache, επιτρέποντας στα templates να φορτώνονται ξανά σε κάθε request και είναι χρήσιμο κατά την ανάπτυξη της εφαρμογής.
+ Όταν θέτουμε το app.jinja_env.auto_reload την τιμή True, το Flask παρακολουθεί αλλαγές στα αρχεία των templates και τα ανανεώνει αυτόματα. Χωρίς αυτήν τη ρύθμιση, οι αλλαγές στα HTML αρχεία των templates δεν θα φαίνονται μέχρι να γίνει restart της εφαρμογής.
 
 <br><br>
 
+#### Συνάρτηση index() - app.py
 ```
 @app.route("/", methods=["GET"])
 def index():
