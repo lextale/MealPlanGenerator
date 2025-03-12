@@ -33,9 +33,178 @@ def auth():
 - Εξουσιοδοτεί το Hugging Face Hub ώστε να έχουμε πρόσβαση στο κλειστό (gated) αποθετήριο που είναι διαθέσιμο το μοντέλο Llama-2-7b-chat-hf. Η άδεια χρήσης του μοντέλου έχει δοθεί κατόπιν αιτήματος μέσω της ειδικής φόρμας στο Hugging Face.
 
 Έχουμε δημιουργήσει Personal Access Tokens για την αυθεντικοποίηση των λογαριασμών που έχουν πρόσβαση στις παραπάνω υπηρεσίες.
-    
 
 <br><br>
+
+```
+@app.before_request
+def before_request():
+    app.jinja_env.cache = None # Απενεργοποίηση της cache των templates
+    app.jinja_env.auto_reload = True # Ενεργοποίηση αυτόματης ανανέωσης των template
+    app.config['TEMPLATES_AUTO_RELOAD'] = True # Επιτρέπει την αυτόματη επαναφόρτωση των templates χωρίς restart
+```
+
+<br><br>
+
+```
+@app.route("/", methods=["GET"])
+def index():
+     return render_template("index.html", 
+                            genders=Constants.GENDERS, 
+                            activityLevels=Constants.ACTIVITY_LEVELS, 
+                            healthGoals=Constants.HEALTH_GOALS, 
+                            dietaryTypes=Constants.DIETARY_TYPES, 
+                            foodAllergies=Constants.FOOD_ALLERGIES, 
+                            foodIntolerancies=Constants.FOOD_INTOLERANCHES, 
+                            micronutrientFocus=Constants.MICRONUTRIENT_FOCUS,
+                            cookingDifficulty=Constants.COOKING_DIFFICULTY)
+```
+
+<br><br>
+
+```
+@app.route('/submit', methods=['POST'])
+def getSubmitForm():
+    try:
+        # Λήψη δεδομένων που εισήγαγε ο χρήστης
+        gender = request.form.get("gender")
+        age = request.form.get("age")
+        diet_type = request.form.get("diet_type")
+        goals = request.form.getlist("goals")  # Get list of selected goals
+        allergies = request.form.getlist("allergies")  # Get list of selected allergies
+        intolerances = request.form.getlist("intolerances")  # Get list of selected intolerances
+
+        # Εμφάνιση Δεδομένων χρήστη
+        print('Data retrived from user\n');
+        print('Gender: '+gender);
+        print('diet_type: '+diet_type);
+        print('goals: '+str(goals));
+        print('intolerances: '+str(intolerances));
+        print('intolerances: '+str(intolerances));
+
+        # Προκαθορισμένη JSON δομή απαντήσεων για τροφοδοσία του Jsonformer
+        json_schema = {
+            "title": "MealPlan",
+            "type": "object",
+            "properties": {
+                "breakfast": {
+                    "type": "object",
+                    "properties": {
+                        "mealName": {"type": "string"},
+                        "ingredients": {"type": "array", "items": {"type": "string"}},
+                        "instructions": {"type": "string",
+                                         "minLength": 200,
+                                         "maxLength": 300
+                                         },
+                        "cookingTime": {"type": "number"},
+                        "calories": {"type": "number"},
+                        "macros": {
+                            "type": "object",
+                            "properties": {
+                                "protein": {"type": "number"},
+                                "carbs": {"type": "number"},
+                                "fat": {"type": "number"},
+                            },
+                        },
+                    },
+                },
+                "lunch": {
+                    "type": "object",
+                    "properties": {
+                        "mealName": {"type": "string"},
+                        "ingredients": {"type": "array", "items": {"type": "string"}},
+                        "instructions": {"type": "string",
+                                         "minLength": 200,
+                                         "maxLength": 300
+                                         },
+                        "cookingTime": {"type": "number"},
+                        "calories": {"type": "number"},
+                        "macros": {
+                            "type": "object",
+                            "properties": {
+                                "protein": {"type": "number"},
+                                "carbs": {"type": "number"},
+                                "fat": {"type": "number"},
+                            },
+                        },
+                    },
+                },
+                "dinner": {
+                    "type": "object",
+                    "properties": {
+                        "mealName": {"type": "string"},
+                        "ingredients": {"type": "array", "items": {"type": "string"}},
+                        "instructions": {"type": "string",
+                                         "minLength": 200,
+                                         "maxLength": 300
+                                         },
+                        "cookingTime": {"type": "number"},
+                        "calories": {"type": "number"},
+                        "macros": {
+                            "type": "object",
+                            "properties": {
+                                "protein": {"type": "number"},
+                                "carbs": {"type": "number"},
+                                "fat": {"type": "number"},
+                            },
+                        },
+                    },
+                },
+            },
+        }
+
+        # Προσχέδιο προτροπής
+        prompt = f"""
+            You are a meal planner that provides to users a day meal plan in the form of json.
+            The user's gender is {gender} and is {age} years old.
+            The user follows {'a '+diet_type if diet_type else 'any'} diet and has the following goals: {goals if goals else 'None'}.
+            The user is allergic to {allergies if allergies else 'nothing'}.
+            The user is food intolerant to {intolerances if intolerances else 'nothing'}.
+
+            Please generate a JSON object following this structure:
+            - "breakfast": Contains details of the breakfast meal.
+              - "mealName": A descriptive name of the meal.
+              - "ingredients": A list of ingredients required.
+              - "instructions": Step-by-step instructions for preparation using minimum 150 characters
+              - "cookingTime": Time required to prepare the meal in minutes.
+              - "calories": Total calorie count for the meal.
+              - "macros": A breakdown of macronutrients.
+                - "protein": Amount of protein in grams.
+                - "carbs": Amount of carbohydrates in grams.
+                - "fat": Amount of fat in grams.
+
+            - "lunch": Similar structure to breakfast.
+            - "dinner": Similar structure to breakfast.
+
+            The meal names should be realistic, ingredients should be commonly available, cookingTime must correspond to the time needed for cooking the meal  and macros should be reasonable. Ensure the JSON output follows the expected structure exactly without extra text."""
+
+        # Εμφάνιση προτροπής
+        print('Prompt used: '+prompt);
+        
+        # Δημιουργία αντικειμένου Jsonformer για παραγωγή δομημένης JSON εξόδου από το γλωσσικό μοντέλο
+        jsonformer = Jsonformer(model, tokenizer, json_schema, prompt, max_string_token_length=3000)
+
+        # Κλήση του Jsonformer για τη δημιουργία JSON δεδομένων σύμφωνα με το καθορισμένο σχήμα
+        response = jsonformer()
+
+        # END TEST (to be deleted)
+        print(f'Response generation ended at: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
+
+        # Εμφάνιση παραγόμενου αποτελέσματος
+        print(response)
+
+        # Φόρτωση της σελίδας αποτελεσμάτων
+        return render_template("results.html", results=response)
+
+    # Διαχείριση σφαλμάτων με τη φόρτωση σελίδας σφάλματος
+    except Exception as e:
+        print(e)
+        return render_template("error.html", error={"error": str(e)}) #return render_template("results.html", response=jsonify({"response": response}))
+
+```
+
+<br><br>
+
 
 #### templates
 #### static
