@@ -7,6 +7,13 @@
 <br><br>Το flask από προεπιλογή εκτελείται τοπικά σε προκαθορισμένη θύρα (port). Για να εκθέσουμε την εφαρμογή σε κάποια δημόσια διεύθυνση αξιοποιούμε το Ngrok, το οποίο λειτουργεί ως ενδιάμεσος proxy, δρομολογώντας την κίνηση μεταξύ του διαδικτύου και του τοπικού server. Όταν εκτελούμε την εφαρμογή, το ngrok δημιουργεί ένα ασφαλές tunnel προς το διαδίκτυο και ένα τυχαίο https url.
 <br><br>
 
+### Ανάλυση Κώδικα
+#### app.py
+
+#### templates
+#### static
+#### Constants 
+
 ![Εικόνα 1: Φόρμα εισαγωγής παραμέτρων](https://github.com/user-attachments/assets/6c3cf485-cfaa-4c5d-bee0-bf4e3b4d15ca)
 <br><i>Εικόνα 1: Φόρμα εισαγωγής παραμέτρων</i><br><br>
 ![Εικόνα 2: Οθόνη κατά την παραγωγή απάντησης](https://github.com/user-attachments/assets/a380dc6c-3ee0-4754-a2bc-8c8287d64ed0)
@@ -36,3 +43,11 @@
 ├── 📄 README.md
 ├── 📄 requirements.txt
 </pre>
+
+<br><br>
+
+### Documentation
+- Flask: https://flask.palletsprojects.com/en/stable/tutorial/
+- Ngrok: https://ngrok.com/docs/guides/developer-preview/getting-started/
+- Jsonformer: https://python.langchain.com/docs/integrations/llms/jsonformer_experimental/
+  
