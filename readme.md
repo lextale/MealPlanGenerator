@@ -377,4 +377,5 @@ app.run()
 - Flask: https://flask.palletsprojects.com/en/stable/tutorial/
 - Ngrok: https://ngrok.com/docs/guides/developer-preview/getting-started/
 - Jsonformer: https://python.langchain.com/docs/integrations/llms/jsonformer_experimental/
+- Llama 2 model: https://huggingface.co/meta-llama/Llama-2-7b-chat-hf
   
