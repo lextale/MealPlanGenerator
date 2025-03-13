@@ -14,7 +14,7 @@ app = Flask(__name__)
 ```
 Δημιουργεί ένα στιγμιότυπο της κλάσης Flask και το εκχωρεί στο αντικείμενο <b>app</b>. Η παράμετρος <b>\_\_name\_\_</b> είναι σημαντική για την λειτουργία της flask εφαρμογής, διότι το Flask πρέπει να γνωρίζει από ποιο αρχείο εκτελείται η εφαρμογή, ώστε να μπορεί να βρει στατικά αρχεία, templates και να ρυθμίσει σωστά τις διαδρομές. Το αντικείμενο `a` χρησιμοποιείται στη συνέχεια για να ορίσουμε διαδρομές (routes), να ρυθμίσουμε παραμέτρους (settings) και να εκκινήσουμε τον διακομιστή (server).
 
-<br><br>
+<br>
 
 #### Η συνάρτηση auth() - app.py
 ```
@@ -35,7 +35,7 @@ def auth():
 
 Έχουμε δημιουργήσει Personal Access Tokens για την αυθεντικοποίηση των λογαριασμών που έχουν πρόσβαση στις παραπάνω υπηρεσίες.
 
-<br><br>
+<br>
 
 #### Συνάρτηση before_request() - app.py
 ```
@@ -49,7 +49,7 @@ def before_request():
  Η app.jinja_env.cache είναι η cache του Jinja2 (το template engine που χρησιμοποιεί η Flask. Θέτοντας την τιμή σε None, απενεργοποιούμε την cache, επιτρέποντας στα templates να φορτώνονται ξανά σε κάθε request και είναι χρήσιμο κατά την ανάπτυξη της εφαρμογής.
  Όταν θέτουμε το app.jinja_env.auto_reload την τιμή True, το Flask παρακολουθεί αλλαγές στα αρχεία των templates και τα ανανεώνει αυτόματα. Χωρίς αυτήν τη ρύθμιση, οι αλλαγές στα HTML αρχεία των templates δεν θα φαίνονται μέχρι να γίνει restart της εφαρμογής.
 
-<br><br>
+<br>
 
 #### Συνάρτηση index() - app.py
 ```
@@ -65,9 +65,11 @@ def index():
                             micronutrientFocus=Constants.MICRONUTRIENT_FOCUS,
                             cookingDifficulty=Constants.COOKING_DIFFICULTY)
 ```
+Η συνάρτηση index() είναι μια route function σε μια Flask εφαρμογή. Ο ρόλος της είναι να χειρίζεται αιτήματα προς την αρχική σελίδα (/) και να επιστρέφει το αρχείο HTML template index.html μέσω της συνάρτησης `render_template()`. Η `render_template()` λαμβάνει ως παραμέτρους το όνομα του HTML αρχείου της αρχικής μας σελίδας και επιπλέον μια σειρά από σταθερές που έχουμε ορίσει στο αρχειο `Constants.py`. Οι σταθερές αυτές συγκρατούν πληροφορίες όπως dropdown list τιμές που χρησιμοποιούνται από τα δυναμικά templates που υπάρχουν μέσα στην `index.html`.
 
-<br><br>
+<br>
 
+#### Συνάρτηση getSubmitForm() - app.py
 ```
 @app.route('/submit', methods=['POST'])
 def getSubmitForm():
@@ -193,9 +195,6 @@ def getSubmitForm():
         # Κλήση του Jsonformer για τη δημιουργία JSON δεδομένων σύμφωνα με το καθορισμένο σχήμα
         response = jsonformer()
 
-        # END TEST (to be deleted)
-        print(f'Response generation ended at: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
-
         # Εμφάνιση παραγόμενου αποτελέσματος
         print(response)
 
@@ -208,9 +207,133 @@ def getSubmitForm():
         return render_template("error.html", error={"error": str(e)}) #return render_template("results.html", response=jsonify({"response": response}))
 
 ```
+- @app.route('/submit', methods=['POST']): Ορίζει μια διαδρομή (/submit) που δέχεται μόνο POST αιτήματα.
+- def getSubmitForm(): Δημιουργεί τη συνάρτηση getSubmitForm() που θα εκτελείται όταν ο χρήστης υποβάλλει δεδομένα στη φόρμα.
 
+```
+gender = request.form.get("gender")
+age = request.form.get("age")
+diet_type = request.form.get("diet_type")
+goals = request.form.getlist("goals")
+allergies = request.form.getlist("allergies")
+intolerances = request.form.getlist("intolerances")
+```
+Χρησιμοποιεί request.form.get() και request.form.getlist() για να λάβει δεδομένα που έχουν υποβληθεί από τη φόρμα. Το getlist() χρησιμοποιείται για πεδία που περιέχουν πολλαπλές επιλογές (π.χ. λίστα αλλεργιών).
+
+```
+json_schema = {
+    "title": "MealPlan",
+    "type": "object",
+    "properties": {
+        "breakfast": {
+            "type": "object",
+            "properties": {
+                "mealName": {"type": "string"},
+                "ingredients": {"type": "array", "items": {"type": "string"}},
+                "instructions": {"type": "string", "minLength": 200, "maxLength": 300},
+                "cookingTime": {"type": "number"},
+                "calories": {"type": "number"},
+                "macros": {
+                    "type": "object",
+                    "properties": {
+                        "protein": {"type": "number"},
+                        "carbs": {"type": "number"},
+                        "fat": {"type": "number"},
+                    },
+                },
+            },
+        },
+        ...
+    },
+}
+```
+Δημιουργεί μια JSON δομή (schema) που καθορίζει το φορμάτ των δεδομένων που θα δημιουργήσει το μοντέλο. Ορίζει τις ιδιότητες (properties) κάθε γεύματος (πρωινό, μεσημεριανό, βραδινό), συμπεριλαμβάνοντας:
+- mealName: Όνομα του γεύματος
+- ingredients: Λίστα με συστατικά
+- instructions: Οδηγίες παρασκευής με ελάχιστο μήκος χαρακτήρων
+- cookingTime: Χρόνος μαγειρέματος
+- calories: Συνολικές θερμίδες
+- macros: Ανάλυση μακροθρεπτικών συστατικών (πρωτεΐνες, υδατάνθρακες, λίπη)
+
+```
+prompt = f"""
+            You are a meal planner that provides to users a day meal plan in the form of json.
+            The user's gender is {gender} and is {age} years old.
+            The user follows {'a '+diet_type if diet_type else 'any'} diet and has the following goals: {goals if goals else 'None'}.
+            The user is allergic to {allergies if allergies else 'nothing'}.
+            The user is food intolerant to {intolerances if intolerances else 'nothing'}.
+
+            Please generate a JSON object following this structure:
+            - "breakfast": Contains details of the breakfast meal.
+              - "mealName": A descriptive name of the meal.
+              - "ingredients": A list of ingredients required.
+              - "instructions": Step-by-step instructions for preparation using minimum 150 characters
+              - "cookingTime": Time required to prepare the meal in minutes.
+              - "calories": Total calorie count for the meal.
+              - "macros": A breakdown of macronutrients.
+                - "protein": Amount of protein in grams.
+                - "carbs": Amount of carbohydrates in grams.
+                - "fat": Amount of fat in grams.
+
+            - "lunch": Similar structure to breakfast.
+            - "dinner": Similar structure to breakfast.
+
+            The meal names should be realistic, ingredients should be commonly available, cookingTime must correspond to the time needed for cooking the meal  and macros should be reasonable. Ensure the JSON output follows the expected structure exactly without extra text."""
+"""
+```
+Δημιουργεί ένα prompt για το γλωσσικό μοντέλο, καθορίζοντας τι πρέπει να περιλαμβάνει ή να αποφύγει στη δημιουργία των γευμάτων, λαμβάνοντας υπόψιν εξατομικευέμνες πληροφορίες για τον χρήστη (π.χ. φύλο, ηλικία, δίαιτα, αλλεργίες). Ζητάει από το μοντέλο να παράγει JSON αντικείμενο με συγκεκριμένη μορφή (σύμφωνα με το json_schema), το οποίο είναι εύχρηστο ως προς την αυτοματοποιημένη εμφάνιση των αποτελεσμάτων με ελεγχόμενο και δομημένο τρόπο.
+
+```
+jsonformer = Jsonformer(model, tokenizer, json_schema, prompt, max_string_token_length=3000)
+response = jsonformer()
+```
+Αρχικοποιεί το αντικείμενο jsonformer, που αποτελεί στιγμιότυπο της κλάσης Jsonformer. Το Jsonformer είναι module της python που επιβάλει στα LLM μοντέλα να παράγουν αποτελέσματα σύμφωνα με προκαθορισμένα JSON σχήματα. Οι παράμετροι που δίνονται είναι οι εξής:
+- model: Το γλωσσικό μοντέλο (LLM)
+- tokenizer: Το tokenizer του μοντέλου
+- json_schema: Το επιθυμητό JSON σχήμα
+- prompt: Την προτροπή που ζητά την παραγωγή δεδομένων
+
+<br>
+
+#### Main - app.py
+```
+if __name__ == '__main__':
+    auth()
+```
+Το πρώτο που πρέπει να εκτελεστεί είναι η Αυθεντικοποίηση για την χρήση Ngrok και HuggingFace, ώστε να έχουμε πρόσβαση στο μοντέλο και την δημιουργία δημόσιων συνδέσμων όπου η εφαρμογή μας θα τρέχει αντίστοιχα.
+```
+save_path = '/content/Saved Models/Llama-2-7b-chat-hf'
+if os.path.exists(save_path):
+    model = LlamaForCausalLM.from_pretrained(save_path)
+    tokenizer = LlamaTokenizer.from_pretrained(save_path)
+else:
+    # Load model from hugging face
+    model_id = "meta-llama/Llama-2-7b-chat-hf"
+    tokenizer = LlamaTokenizer.from_pretrained(model_id, use_fast=True)
+    model = LlamaForCausalLM.from_pretrained(
+        model_id,
+        device_map="auto",
+        torch_dtype=torch.float16,
+        load_in_8bit=True
+    )
+os.makedirs(save_path, exist_ok=True)
+model.save_pretrained(save_path)
+tokenizer.save_pretrained(save_path)
+```
+Εν μέσω της ανάπτυξης της εφαρμογής εξοικονομούμε χρόνο και πόρους εάν αποθηκεύσουμε το μοντέλο τοπικά και το φορτώνουμε από τον τοπικό μας δίσκο. Διαφορετικά, η εφαρμογή κατεβάζει το μοντέλο από το Hugging Face.
+```
+Σε ορισμένα tokenizer (ιδιαίτερα στα μοντέλα Transformer), το pad token (tokenizer.pad_token) δεν είναι πάντα προκαθορισμένο. Το pad_token υποδηλώνει το τέλος μιας πρότασης ή ακολουθίας και χρησιμοποιείται για να γεμίσει ακολουθίες (padding), ώστε να έχουν το ίδιο μήκος. Αν το pad_token είναι None, τότε το μοντέλο μπορεί να μη χειρίζεται σωστά το padding. Αντί να αφήσουμε το pad_token άδειο, το ρυθμίζουμε να έχει την τιμή του eos_token, που υπάρχει στα περισσότερα μοντέλα.
+    
+```
+public_url = ngrok.connect(5000).public_url
+print(f"Public URL: {public_url}")
+```
+Καλεί τη συνάρτηση ngrok.connect(5000), η οποία δημιουργεί ένα δημόσιο URL χρησιμοποιώντας την υπηρεσία ngrok. Το 5000 είναι η πόρτα στην οποία εκτελείται η Flask εφαρμογή. Το .public_url επιστρέφει το URL που δημιουργήθηκε, ώστε να είναι δυνατή η πρόσβαση στην εφαρμογή Flask από το διαδίκτυο.
+```
+app.run()
+```
+Εκκινεί τη Flask εφαρμογή.
 <br><br>
-
 
 #### templates
 #### static
