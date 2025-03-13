@@ -340,9 +340,18 @@ app.run()
 <br><br>
 
 #### templates
+-  error.html: Σελίδα Σφαλμάτων
+-  index.html: Αρχική Σελίδα
+-  results.html: Σελίδα Αποτελεσμάτων
+
+<br><br>
 #### static
-#### Constants 
-Ορίζουμε μια σελίδα (/): Με @app.route('/'), καθορίζουμε τι θα εμφανιστεί όταν κάποιος επισκεφτεί τη σελίδα.
+- script.js: Κώδικας Javascript για την εκτέλεση σε templates
+- style-results.css: CSS για την Σελίδα Αποτελεσμάτων
+- styles.css: CSS για την Αρχική Σελίδα
+<br><br>
+#### Constants
+Περιέχει τις σταθερές τιμές και λίστες που θα τροφοδοτήσουν τα templates
 
 ![Εικόνα 1: Φόρμα εισαγωγής παραμέτρων](https://github.com/user-attachments/assets/6c3cf485-cfaa-4c5d-bee0-bf4e3b4d15ca)
 <br><i>Εικόνα 1: Φόρμα εισαγωγής παραμέτρων</i><br><br>
