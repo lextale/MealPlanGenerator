@@ -240,3 +240,14 @@ input[type="submit"] {
     height: 50px;
     width: 100%;
 }
+
+input[type="button"] {
+    font-size: x-large;
+    background-color: darkseagreen;
+    border-color: darkseagreen;
+    color: ghostwhite;
+    font-weight: bold;
+    border-radius: 10px;
+    height: 50px;
+    width: 100%;
+}
