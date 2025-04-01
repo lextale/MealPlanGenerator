@@ -60,6 +60,9 @@ body {
     overflow-y: scroll;
     min-height: fit-content;
     scrollbar-width: none;
+    margin: 0px 100px;
+    width: 75%;
+    justify-self: anchor-center;
 }
 
 .search-container {
@@ -109,7 +112,7 @@ body {
 }
 
 .form-section-2 {
-    display: grid;
+    display: block; /*display: grid;*/
     /* flex-direction: row; */
     /* width: 50%; */
     /* grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); */
