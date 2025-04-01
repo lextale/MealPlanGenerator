@@ -15,7 +15,7 @@
     <!-- Περιέχει την φόρμα που με τις πληφορίες που θα τροφοδοτήσει ο χρήστης το prompt του μοντέλου -->
     <div class="form-container" id="form-container">
         <form id="user-form" action="/submit" method="POST" onsubmit="showLoading()">
-            <div class="form-section-1">
+            <div class="form-section-1" id="section1">
                 <div class="form-section-column">
                     <!-- Φύλο (Picklist) -->
                     <label for="gender">Gender:</label>
@@ -40,11 +40,11 @@
                     </select><br><br>
                 </div>
             </div>
-            <div class="form-section-2">
-                <div class="form-section-column-checkboxes">
+            <div class="form-section-2" id="section2">
+                <div class="form-section-column-checkboxes" id="slide3">
                     <!-- Αλλεργίες (Checkboxes) -->
                     <div class="checkboxes-content">
-                        <label for="allergies"><b>Food Allergies</b><br><span style="font-size: 10px;">(Select all that apply)</span></label><br>
+                        <label for="allergies"><b>Food Allergies</b><br><span style="font-size: 11.5px;">(Select all that apply)</span></label><br>
                         <div class="form-checkboxes-section">
                             {% for allergy in foodAllergies %}
                                 <input type="checkbox" id="allergy_{{ allergy }}" name="allergies" value="{{ allergy }}">
@@ -53,9 +53,9 @@
                         </div>
                     </div>
                 </div>
-                <div class="form-section-column-checkboxes">
+                <div class="form-section-column-checkboxes" id="slide4">
                     <!-- Διατροφικοί Στόχοι (Checkboxes) -->
-                    <label for="goals"><b>Health Goals</b><br><span style="font-size: 10px;">(Select all that apply)</span></label><br>
+                    <label for="goals"><b>Health Goals</b><br><span style="font-size: 11.5px;">(Select all that apply)</span></label><br>
                     <div class="form-checkboxes-section">
                         {% for goal in healthGoals %}
                             <input type="checkbox" id="goal_{{ goal }}" name="goals" value="{{ goal }}">
@@ -63,9 +63,9 @@
                         {% endfor %}<br>
                     </div>
                 </div>
-                <div class="form-section-column-checkboxes">
+                <div class="form-section-column-checkboxes" id="slide5">
                     <!-- Δυσανεξίες (Checkboxes) -->
-                    <label for="intolerances"><b>Food Intolerances</b><br><span style="font-size: 10px;">(Select all that apply)</span></label><br>
+                    <label for="intolerances"><b>Food Intolerances</b><br><span style="font-size: 11.5px;">(Select all that apply)</span></label><br>
                     <div class="form-checkboxes-section">
                         {% for intolerance in foodIntolerancies %}
                             <input type="checkbox" id="intolerance_{{ intolerance }}" name="intolerances" value="{{ intolerance }}">
