@@ -251,3 +251,36 @@ input[type="button"] {
     height: 50px;
     width: 100%;
 }
+
+div#button-div {
+    width: 100%;
+    display: flex;
+}
+
+input#submit {
+  display: none;
+}
+
+input#next {
+  display: none;
+}
+
+input#back {
+  display: none;
+}
+
+div#slide2 {
+    display: none;
+}
+
+div#slide3 {
+    display: none;
+}
+
+div#slide4 {
+    display: none;
+}
+
+div#slide5 {
+    display: none;
+}
