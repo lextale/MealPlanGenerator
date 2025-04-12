@@ -284,3 +284,9 @@ div#slide4 {
 div#slide5 {
     display: none;
 }
+
+.error-message {
+  color: red;
+  font-size: 0.9em;
+  margin-top: 4px;
+}
