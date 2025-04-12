@@ -76,7 +76,7 @@ def index():
 def getSubmitForm():
     try:
         # Get form data
-        sex = request.form.get("sex")
+        gender = request.form.get("gender")
         age = request.form.get("age")
         diet_type = request.form.get("diet_type")
         goals = request.form.getlist("goals")  # Get list of selected goals
@@ -89,7 +89,7 @@ def getSubmitForm():
         '''
         if not name:
             return jsonify({"error": "No message provided."}), 400
-        if not sex:
+        if not gender:
             return jsonify({"error": "No message provided."}), 400
         '''
         json_schema = {
@@ -161,7 +161,7 @@ def getSubmitForm():
 
         prompt = f"""
             You are a meal planner that provides to users a day meal plan in the form of json.
-            The user's sex is {sex} and is {age} years old.
+            The user's gender is {gender} and is {age} years old.
             The user follows {'a '+diet_type if diet_type else 'any'} diet and has the following goals: {goals if goals else 'None'}.
             The user is allergic to {allergies if allergies else 'nothing'}.
             The user is food intolerant to {intolerances if intolerances else 'nothing'}.
