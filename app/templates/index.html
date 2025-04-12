@@ -15,7 +15,7 @@
     <!-- Περιέχει την φόρμα που με τις πληφορίες που θα τροφοδοτήσει ο χρήστης το prompt του μοντέλου -->
     <div class="form-container" id="form-container">
         <form id="user-form" action="/submit" method="POST" onsubmit="showLoading()">
-            <div class="form-section-1" id="section1">
+            <div class="form-section-1" id="slide2">
                 <div class="form-section-column">
                     <!-- Φύλο (Picklist) -->
                     <label for="gender">Gender:</label>
@@ -105,11 +105,13 @@
                 </div>
             </div>
             <!-- Submit Button -->
-            <input type="submit" value="Submit" id="submit">
-            <input type="submit" value="Random" id="random">
-            <input type="button" value="Personalize" id="personalize">
-            <input type="button" value="Next" id="next">
-            <input type="button" value="Back" id="back">
+            <div id="button-div">
+              <input type="submit" value="Submit" id="submit">
+              <input type="submit" value="Random" id="random">
+              <input type="button" value="Personalize" id="personalize">
+              <input type="button" value="Next" id="next">
+              <input type="button" value="Back" id="back">
+            </div>
 
         </form>
     </div>
