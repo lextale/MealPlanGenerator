@@ -114,10 +114,6 @@ document.addEventListener("DOMContentLoaded", function () {
     showSlide(currentSlide);
   });
 
-  document.getElementById("random").addEventListener("click", function () {
-    alert("Random clicked! (You can customize what happens here.)");
-  });
-
   nextBtn.addEventListener("click", function () {
     if (currentSlide === 2) {
       const gender = document.getElementById("gender").value.trim();
