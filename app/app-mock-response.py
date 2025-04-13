@@ -24,7 +24,7 @@ def auth():
     os.system(f'ngrok authtoken {ngrok_auth_token}')
 
     # HuggingFace Authentication
-    login('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+    #login('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
 
 '''
 def loadLLM():
@@ -282,6 +282,15 @@ def getSubmitForm():
         print(e)
         return render_template("error.html", error={"error": str(e)}) #return render_template("results.html", response=jsonify({"response": response}))
         #return jsonify({"error": str(e)}), 500
+
+
+@app.route("/login")
+def login():
+    return render_template("login.html")
+
+@app.route("/signup")
+def signup():
+    return render_template("signup.html")
 
 if __name__ == '__main__':
     auth()
