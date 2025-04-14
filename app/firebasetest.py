@@ -330,9 +330,32 @@ def signup():
 
     return render_template('signup.html')
 
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    # You'll implement this after signup works
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+
+        try:
+            user = auth.sign_in_with_email_and_password(email, password)
+
+            # Check if email is verified
+            user_info = auth.get_account_info(user['idToken'])
+            email_verified = user_info['users'][0]['emailVerified']
+
+            if not email_verified:
+                flash("Please verify your email before logging in.", "warning")
+                return redirect(url_for('login'))
+
+            session['user'] = user['localId']
+            flash("Logged in successfully!", "success")
+            return redirect(url_for('index'))
+
+        except Exception as e:
+            error_msg = str(e).split(']')[-1].strip()
+            flash(error_msg, "danger")
+
     return render_template('login.html')
 
 if __name__ == '__main__':
