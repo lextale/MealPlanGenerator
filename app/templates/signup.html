@@ -6,6 +6,19 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='signup.css') }}">
 </head>
+
+<nav class="navbar">
+  <div class="nav-left">
+    <span class="logo">Nutrition Generator</span>
+  </div>
+  <div class="nav-right">
+    <a href="profile" id="profile">Profile</a>
+    <a href="/" id="login">Home</a>
+    <a href="login" id="login">Login</a>
+    <a href="signup" id="signup">Sign up</a>
+  </div>
+</nav>
+
 <body>
   <h2>Signup</h2>
     {% with messages = get_flashed_messages(with_categories=true) %}
