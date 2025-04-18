@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, redirect, url_for, flash, session
 import torch
 from transformers import LlamaForCausalLM, LlamaTokenizer
 from huggingface_hub import login
@@ -10,15 +10,24 @@ import json
 import re
 from jsonformer import Jsonformer
 import time
+import pyrebase
 
 
 app = Flask(__name__)
 #tokenizer = None
 #model = None
 
-def auth():
+app.secret_key = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+firebase_config = {}
+
+
+firebase = pyrebase.initialize_app(firebase_config)
+auth = firebase.auth()
+db = firebase.database()
+
+def init_auth():
     # Authorize ngrok
-    ngrok_auth_token = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+    ngrok_auth_token = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
     
     # Run the ngrok command to set the authtoken
     os.system(f'ngrok authtoken {ngrok_auth_token}')
@@ -284,16 +293,63 @@ def getSubmitForm():
         #return jsonify({"error": str(e)}), 500
 
 
-@app.route("/login")
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    return render_template("login.html")
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
 
-@app.route("/signup")
+        try:
+            user = auth.sign_in_with_email_and_password(email, password)
+
+            # Check if email is verified
+            user_info = auth.get_account_info(user['idToken'])
+            email_verified = user_info['users'][0]['emailVerified']
+
+            if not email_verified:
+                flash("Please verify your email before logging in.", "warning")
+                return redirect(url_for('login'))
+
+            session['user'] = user['localId']
+            flash("Logged in successfully!", "success")
+            return redirect(url_for('index'))
+
+        except Exception as e:
+            error_msg = str(e).split(']')[-1].strip()
+            flash(error_msg, "danger")
+
+    return render_template('login.html')
+
+@app.route('/signup', methods=['GET', 'POST'])
 def signup():
-    return render_template("signup.html")
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        username = request.form['username']
+
+        try:
+            user = auth.create_user_with_email_and_password(email, password)
+            auth.send_email_verification(user['idToken'])
+
+            # Save additional info to the database
+            data = {
+                "username": username,
+                "email": email
+            }
+            uid = user['localId']
+            db.child("users").child(uid).set(data)
+
+            flash("Account created! Check your email to verify.", "success")
+            return redirect(url_for('login'))
+
+        except Exception as e:
+            error_msg = str(e).split(']')[-1].strip()
+            flash(error_msg, "danger")
+
+    return render_template('signup.html')
 
 if __name__ == '__main__':
-    auth()
+    init_auth()
     #loadLLM()
     '''
     save_path = '/content/drive/MyDrive/Πτυχιακή Backup/Saved Models/Llama-2-7b-chat-hf'
