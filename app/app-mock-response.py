@@ -417,16 +417,16 @@ def upload_avatar():
 
     avatar = request.files.get('avatar')
     if avatar:
+        uid = session['user']['uid']
         filename = secure_filename(avatar.filename)
-        filepath = os.path.join('static', 'uploads', filename)
+        filepath = os.path.join('/content/thesisRepo/app/static/uploads/', uid+'.'+filename.split('.')[1])
         avatar.save(filepath)
 
         # Save the avatar path to user's data
-        uid = session['user']['uid']
-        db.child("users").child(uid).update({"avatar_url": f"/{filepath}"})
+        db.child("users").child(uid).update({"avatar_url": f"{filepath}"})
         
         # Optional: update session data too
-        session['user']['avatar_url'] = f"/{filepath}"
+        session['user']['avatar_url'] = f"{filepath}"
 
         flash("Avatar uploaded successfully!", "success")
 
