@@ -323,8 +323,14 @@ def login():
             return redirect(url_for('index'))
 
         except Exception as e:
-            error_msg = str(e).split(']')[-1].strip()
+            error_msg = str(e)
+            if "INVALID_LOGIN_CREDENTIALS" in str(e):
+                flash("Wrong email or password!", "danger")
+                return render_template('login.html', email=email)
+            
             flash(error_msg, "danger")
+            return render_template('login.html', email=email)
+
 
     return render_template('login.html')
 
@@ -351,7 +357,11 @@ def signup():
             return redirect(url_for('login'))
 
         except Exception as e:
-            flash(str(e), "danger")
+          if "WEAK_PASSWORD" in str(e):
+              flash("Password must be at least 6 characters.", "danger")
+              return render_template('signup.html', username=username, email=email)
+          
+          flash(str(e), "danger")
 
     return render_template('signup.html')
 

@@ -33,7 +33,7 @@ input {
 button {
   width: 100%;
   padding: 0.7rem;
-  background: #4CAF50;
+  background: darkseagreen;
   color: white;
   border: none;
   border-radius: 8px;
@@ -87,8 +87,4 @@ button:hover {
   margin-left: 0px;
   margin-right: 0px;
   box-sizing: border-box;
-}
-
-#profile {
-  display: none;
 }
