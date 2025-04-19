@@ -11,6 +11,8 @@ import re
 from jsonformer import Jsonformer
 import time
 import pyrebase
+from werkzeug.utils import secure_filename
+import requests
 
 app = Flask(__name__)
 #tokenizer = None
@@ -374,7 +376,61 @@ def logout():
 
 @app.route('/profile')
 def profile():
-    return render_template("profile.html")
+    if 'user' not in session:
+        flash("Please log in to view your profile.", "warning")
+        return redirect(url_for('login'))
+
+    user = session['user']
+    return render_template("profile.html", user=user)
+
+@app.route('/change_password', methods=['POST'])
+def change_password():
+    if 'user' not in session:
+        flash("Please log in to change your password.", "danger")
+        return redirect(url_for('login'))
+
+    email = session['user']['email']
+    current_password = request.form['current_password']
+    new_password = request.form['new_password']
+
+    try:
+        # Re-authenticate to get a fresh token
+        user = auth.sign_in_with_email_and_password(email, current_password)
+
+        # Update password
+        #auth.update_user_password(user['idToken'], new_password)
+        auth.send_password_reset_email(email)
+        #flash("Password updated successfully!", "success")
+        flash("Check your email!", "success")
+    except Exception as e:
+        error_msg = str(e)
+        print(error_msg)
+        flash(f"Password change failed: {error_msg}", "danger")
+    
+    return redirect(url_for('profile'))
+
+@app.route('/upload_avatar', methods=['POST'])
+def upload_avatar():
+    if 'user' not in session:
+        flash("Please log in to upload an avatar.", "warning")
+        return redirect(url_for('login'))
+
+    avatar = request.files.get('avatar')
+    if avatar:
+        filename = secure_filename(avatar.filename)
+        filepath = os.path.join('static', 'uploads', filename)
+        avatar.save(filepath)
+
+        # Save the avatar path to user's data
+        uid = session['user']['uid']
+        db.child("users").child(uid).update({"avatar_url": f"/{filepath}"})
+        
+        # Optional: update session data too
+        session['user']['avatar_url'] = f"/{filepath}"
+
+        flash("Avatar uploaded successfully!", "success")
+
+    return redirect(url_for('profile'))
 
 if __name__ == '__main__':
     init_auth()
