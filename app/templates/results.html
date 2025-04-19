@@ -7,6 +7,24 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style-results.css') }}">
 </head>
+
+<nav class="navbar">
+  <div class="nav-left">
+    <span class="logo">Nutrition Generator</span>
+  </div>
+  <div class="nav-right">
+    <a href="/" id="home">Home</a>
+    {% if 'user' not in session %}
+    <a href="{{ url_for('login') }}" id="login">Login</a>
+    <a href="{{ url_for('signup') }}" id="signup">Sign up</a>
+    {% endif %}
+    {% if 'user' in session %}
+    <a href="profile" id="profile">Profile</a>
+    <a href="{{ url_for('logout') }}" id="logout">Log out</a>
+    {% endif %}
+  </div>
+</nav>
+
 <body>
 
 <div class="container my-5">

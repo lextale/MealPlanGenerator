@@ -12,7 +12,6 @@ from jsonformer import Jsonformer
 import time
 import pyrebase
 
-
 app = Flask(__name__)
 #tokenizer = None
 #model = None
@@ -66,6 +65,11 @@ def before_request():
     app.jinja_env.cache = None
     app.jinja_env.auto_reload = True
     app.config['TEMPLATES_AUTO_RELOAD'] = True
+
+@app.after_request
+def add_header(response):
+    response.headers['Cache-Control'] = 'no-store'
+    return response
 
 # Home page
 @app.route("/", methods=["GET"])
@@ -310,7 +314,11 @@ def login():
                 flash("Please verify your email before logging in.", "warning")
                 return redirect(url_for('login'))
 
-            session['user'] = user['localId']
+            session['user'] = {
+                "email": email,
+                "uid": user['localId'],
+                "username": db.child("users").child(user['localId']).child("username").get().val()
+            }
             flash("Logged in successfully!", "success")
             return redirect(url_for('index'))
 
@@ -343,10 +351,16 @@ def signup():
             return redirect(url_for('login'))
 
         except Exception as e:
-            error_msg = str(e).split(']')[-1].strip()
-            flash(error_msg, "danger")
+            flash(str(e), "danger")
 
     return render_template('signup.html')
+
+@app.route('/logout')
+def logout():
+    session.pop('user', None)
+    session.clear()
+    flash("You’ve been logged out", "info")
+    return redirect(url_for('login'))
 
 if __name__ == '__main__':
     init_auth()
