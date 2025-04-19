@@ -20,7 +20,7 @@
     <a href="{{ url_for('signup') }}" id="signup">Sign up</a>
     {% endif %}
     {% if 'user' in session %}
-    <a href="profile" id="profile">Profile</a>
+    <a href="{{ url_for('profile') }}" id="profile">Profile</a>
     <a href="{{ url_for('logout') }}" id="logout">Log out</a>
     {% endif %}
   </div>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>User Profile</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='profile.css') }}">
+</head>
+<body>
+  <div class="profile-container">
+    <h2>Welcome,  user.username </h2>
+    <div class="info">
+      <p><strong>Email:</strong>  user.email </p>
+    </div>
+    <!--
+    <div class="avatar-section">
+      <img class="avatar" src="{{ user.avatar_url or url_for('static', filename='default-avatar.png') }}" alt="User Avatar">
+      <form action="{{ url_for('upload_avatar') }}" method="POST" enctype="multipart/form-data">
+        <input type="file" name="avatar" accept="image/*" required>
+        <br>
+        <button type="submit">Upload Avatar</button>
+      </form>
+    </div>-->
+  </div>
+</body>
+</html>
