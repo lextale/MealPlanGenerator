@@ -18,16 +18,8 @@ app = Flask(__name__)
 #tokenizer = None
 #model = None
 
-app.secret_key = 'tkchIfNt1rYt8ukIlHPUptlty6jDXGByAuUvH5O5'
-firebase_config = {
-  "apiKey": "AIzaSyDmU2WpIDBTKdQN_1LSiXU3CneIOYuUiIQ",
-  "authDomain": "nutrition-app-4992f.firebaseapp.com",
-  "databaseURL": "https://nutrition-app-4992f-default-rtdb.europe-west1.firebasedatabase.app",
-  "projectId": "nutrition-app-4992f",
-  "storageBucket": "nutrition-app-4992f.firebasestorage.app",
-  "messagingSenderId": "675341435032",
-  "appId": "1:675341435032:web:efa83f0a24b54bef4810ed"
-}
+app.secret_key = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+firebase_config = {}
 
 
 firebase = pyrebase.initialize_app(firebase_config)
@@ -36,7 +28,7 @@ db = firebase.database()
 
 def init_auth():
     # Authorize ngrok
-    ngrok_auth_token = '2sPleGqjuE0nbQlEgBuGv7Lp6IB_7t84XTACcU5G3227NwaTo'
+    ngrok_auth_token = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
     
     # Run the ngrok command to set the authtoken
     os.system(f'ngrok authtoken {ngrok_auth_token}')
