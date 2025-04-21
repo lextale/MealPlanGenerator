@@ -297,8 +297,9 @@ def getSubmitForm():
                           "allergies": allergies,
                           "intolerances": intolerances}
 
+        print('session => '+str(session))
         if 'user' in session:
-          storeGeneratedMealPlan(session['user']['localId'], response, submissionForm)
+          storeGeneratedMealPlan(session['user']['uid'], response, submissionForm)
         
         #time.sleep(30)
         
@@ -444,45 +445,42 @@ def upload_avatar():
     return redirect(url_for('profile'))
 
 def storeGeneratedMealPlan(userId, response, submissionForm):
-  try:
-      # Εκτελείται μόνο για συνδεδεμένους χρήστες
-    
-      timestamp_created = int(time.time())
-      
-      # Αποθήκευση ημερήσιου πλάνου στη Βάση Δεδομένων
-      generatedMealPlan = db.child("mealPlans").push(
+    # Εκτελείται μόνο για συνδεδεμένους χρήστες
+
+    timestamp_created = int(time.time())
+
+    # Αποθήκευση ημερήσιου πλάνου στη Βάση Δεδομένων
+    generatedMealPlan = db.child("mealPlans").push(
+      {
+          "user": userId,
+          "timestamptCreated": timestamp_created, 
+          "timestamptLiked": "", 
+          "timestamptUnliked": "", 
+          "isLiked": False, 
+          "submissionFormId": submissionForm 
+      }
+    )
+    mealPlanId = generatedMealPlan['name']
+
+    # Αποθήκευση γεύματος στη Βάση Δεδομένων
+    for mealType, mealInfo in response.items():
+      generatedMeal = db.child("meals").push(
         {
-            "user": userId,
-            "timestamptCreated": timestamp_created, 
-            "timestamptLiked": "", 
-            "timestamptUnliked": "", 
-            "isLiked": False, 
-            "submissionFormId": submissionForm 
+          "user": userId,
+          "mealPlanId": mealPlanId,
+          "timestamptCreated": timestamp_created, 
+          "timestamptLiked": "", 
+          "timestamptUnliked": "", 
+          "isLiked": False, 
+          "mealType": mealType, 
+          "mealName": mealInfo['mealName'], 
+          "ingredients": mealInfo['ingredients'], 
+          "preparation": mealInfo['instructions'], 
+          "cookingTime": mealInfo['cookingTime'], 
+          "calories": mealInfo['calories'], 
+          "macros": mealInfo['macros']
         }
       )
-      mealPlanId = generatedMealPlan['name']
-
-      # Αποθήκευση γεύματος στη Βάση Δεδομένων
-      for mealType, mealInfo in response.items():
-        generatedMeal = db.child("meals").push(
-          {
-            "user": userId,
-            "mealPlanId": mealPlanId,
-            "timestamptCreated": timestamp_created, 
-            "timestamptLiked": "", 
-            "timestamptUnliked": "", 
-            "isLiked": False, 
-            "mealType": mealType, 
-            "mealName": mealInfo['mealName'], 
-            "ingredients": mealInfo['ingredients'], 
-            "preparation": mealInfo['instructions'], 
-            "cookingTime": mealInfo['cookingTime'], 
-            "calories": mealInfo['calories'], 
-            "macros": mealInfo['macros']
-          }
-        )
-  except Exception as e:
-    print(e)
 '''
 @app.route('/like_meal_plan', methods=['POST'])
 def like_post():
