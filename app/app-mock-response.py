@@ -18,8 +18,16 @@ app = Flask(__name__)
 #tokenizer = None
 #model = None
 
-app.secret_key = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
-firebase_config = {}
+app.secret_key = 'tkchIfNt1rYt8ukIlHPUptlty6jDXGByAuUvH5O5'
+firebase_config = {
+  "apiKey": "AIzaSyDmU2WpIDBTKdQN_1LSiXU3CneIOYuUiIQ",
+  "authDomain": "nutrition-app-4992f.firebaseapp.com",
+  "databaseURL": "https://nutrition-app-4992f-default-rtdb.europe-west1.firebasedatabase.app",
+  "projectId": "nutrition-app-4992f",
+  "storageBucket": "nutrition-app-4992f.firebasestorage.app",
+  "messagingSenderId": "675341435032",
+  "appId": "1:675341435032:web:efa83f0a24b54bef4810ed"
+}
 
 
 firebase = pyrebase.initialize_app(firebase_config)
@@ -28,7 +36,7 @@ db = firebase.database()
 
 def init_auth():
     # Authorize ngrok
-    ngrok_auth_token = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+    ngrok_auth_token = '2sPleGqjuE0nbQlEgBuGv7Lp6IB_7t84XTACcU5G3227NwaTo'
     
     # Run the ngrok command to set the authtoken
     os.system(f'ngrok authtoken {ngrok_auth_token}')
@@ -288,6 +296,17 @@ def getSubmitForm():
         print(f'Response generation ended at: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
 
         print(response)
+
+        
+        submissionForm = {"gender": gender,
+                          "age": age,
+                          "diet_type": diet_type,
+                          "goals": goals,
+                          "allergies": allergies,
+                          "intolerances": intolerances}
+
+        if 'user' in session:
+          storeGeneratedMealPlan(session['user']['localId'], response, submissionForm)
         
         #time.sleep(30)
         
@@ -432,6 +451,75 @@ def upload_avatar():
 
     return redirect(url_for('profile'))
 
+def storeGeneratedMealPlan(userId, response, submissionForm):
+  try:
+      # Εκτελείται μόνο για συνδεδεμένους χρήστες
+    
+      timestamp_created = int(time.time())
+      
+      # Αποθήκευση ημερήσιου πλάνου στη Βάση Δεδομένων
+      generatedMealPlan = db.child("mealPlans").push(
+        {
+            "user": userId,
+            "timestamptCreated": timestamp_created, 
+            "timestamptLiked": "", 
+            "timestamptUnliked": "", 
+            "isLiked": False, 
+            "submissionFormId": submissionForm 
+        }
+      )
+      mealPlanId = generatedMealPlan['name']
+
+      # Αποθήκευση γεύματος στη Βάση Δεδομένων
+      for mealType, mealInfo in response.items():
+        generatedMeal = db.child("meals").push(
+          {
+            "user": userId,
+            "mealPlanId": mealPlanId,
+            "timestamptCreated": timestamp_created, 
+            "timestamptLiked": "", 
+            "timestamptUnliked": "", 
+            "isLiked": False, 
+            "mealType": mealType, 
+            "mealName": mealInfo['mealName'], 
+            "ingredients": mealInfo['ingredients'], 
+            "preparation": mealInfo['instructions'], 
+            "cookingTime": mealInfo['cookingTime'], 
+            "calories": mealInfo['calories'], 
+            "macros": mealInfo['macros']
+          }
+        )
+  except Exception as e:
+    print(e)
+'''
+@app.route('/like_meal_plan', methods=['POST'])
+def like_post():
+    if 'user' not in session:
+        flash("Please log in to like posts.", "error")
+        return redirect(url_for('login'))
+
+    userId = session['user']['localId']
+    mealPlanId = request.form['mealPlanId']
+
+    # You can store likes as a list of user IDs under the post
+    db.child("likes").child(mealPlanId).child(userId).set(True)
+
+    flash("Meal Plan saved!", "success")
+
+@app.route('/like_meal', methods=['POST'])
+def like_post():
+    if 'user' not in session:
+        flash("Please log in to like posts.", "error")
+        return redirect(url_for('login'))
+
+    userId = session['user']['localId']
+    mealId = request.form['mealId']
+
+    # You can store likes as a list of user IDs under the post
+    db.child("likes").child(mealId).child(userId).set(True)
+
+    flash("Meal saved!", "success")
+'''
 if __name__ == '__main__':
     init_auth()
     #loadLLM()
