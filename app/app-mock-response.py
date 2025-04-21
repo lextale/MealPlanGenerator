@@ -13,6 +13,7 @@ import time
 import pyrebase
 from werkzeug.utils import secure_filename
 import requests
+import traceback
 
 app = Flask(__name__)
 #tokenizer = None
@@ -299,14 +300,28 @@ def getSubmitForm():
 
         print('session => '+str(session))
         if 'user' in session:
-          storeGeneratedMealPlan(session['user']['uid'], response, submissionForm)
-        
+          mealPlanId, mealIds = storeGeneratedMealPlan(session['user']['uid'], response, submissionForm)
+          '''
+          response['mealPlanId'] = mealPlanId
+          response['breakfast']['mealId'] = mealIds[0]
+          response['lunch']['mealId'] = mealIds[1]
+          response['dinner']['mealId'] = mealIds[2]
+          '''
+
+          print(mealPlanId)
+          print(mealIds)
+          print(response)
+
         #time.sleep(30)
-        
-        return render_template("results.html", results=response) #return render_template("results.html", response=jsonify({"response": response}))
+        if 'user' in session:
+          return render_template("results.html", results=response)
+        else:
+          return render_template("results.html", results=response) #return render_template("results.html", response=jsonify({"response": response}))
 
     except Exception as e:
         print(e)
+        print(str(response))
+        traceback.print_exc()
         return render_template("error.html", error={"error": str(e)}) #return render_template("results.html", response=jsonify({"response": response}))
         #return jsonify({"error": str(e)}), 500
 
@@ -461,7 +476,7 @@ def storeGeneratedMealPlan(userId, response, submissionForm):
       }
     )
     mealPlanId = generatedMealPlan['name']
-
+    mealIds = []
     # Αποθήκευση γεύματος στη Βάση Δεδομένων
     for mealType, mealInfo in response.items():
       generatedMeal = db.child("meals").push(
@@ -481,21 +496,25 @@ def storeGeneratedMealPlan(userId, response, submissionForm):
           "macros": mealInfo['macros']
         }
       )
-'''
+      mealIds.append(generatedMeal['name'])
+
+    return mealPlanId, mealIds
+
 @app.route('/like_meal_plan', methods=['POST'])
-def like_post():
+def like_meal_plan():
     if 'user' not in session:
-        flash("Please log in to like posts.", "error")
+        flash("Please log in to like meal plans.", "error")
         return redirect(url_for('login'))
 
-    userId = session['user']['localId']
+    userId = session['user']['uid']
     mealPlanId = request.form['mealPlanId']
 
-    # You can store likes as a list of user IDs under the post
-    db.child("likes").child(mealPlanId).child(userId).set(True)
+    # Toggle like meal plan
+    db.child("mealPlans").child(mealPlanId).update({"isLiked": not db.child("mealPlans").child(mealPlanId).child("isLiked").get().val()})
 
     flash("Meal Plan saved!", "success")
 
+'''
 @app.route('/like_meal', methods=['POST'])
 def like_post():
     if 'user' not in session:

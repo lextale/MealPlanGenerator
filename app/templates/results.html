@@ -55,6 +55,10 @@
                     </p>
                 </div>
             </div>
+            <form action="{{ url_for('like_meal_plan') }}" method="POST" style="display:inline;">
+              <input type="hidden" name="meal_id" value="{{ meal.id }}">
+              <button type="submit" class="like-btn">❤️</button>
+            </form>
         </div>
         {% endfor %}
     </div>
