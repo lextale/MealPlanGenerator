@@ -35,7 +35,7 @@
         <div class="col-md-4">
             <div class="card">
                 <div class="card-body">
-                    <h4 class="card-title"><b>{{ meal }}</b></h4>
+                    <h4 class="card-title"><b>{{ meal.capitalize() }}</b></h4>
                     <h5 class="card-title"><b>{{ data['mealName'] }}</b></h5>
                     <h6 class="card-subtitle mb-2 text-muted">Calories: {{ ('%.2f'|format(data['calories']|float)).rstrip('0').rstrip('.') }} kcal</h6>
                     <p class="card-text">
@@ -55,9 +55,8 @@
                     </p>
                 </div>
             </div>
-            <form action="{{ url_for('like_meal_plan') }}" method="POST" style="display:inline;">
-              <input type="hidden" name="meal_id" value="{{ meal.id }}">
-              <button type="submit" class="like-btn">❤️</button>
+            <form class="like-form" data-meal-id="{{ data['mealId'] }}">
+              <button type="submit" class="like-meal-btn" id="like-meal-btn">🤍</button>
             </form>
         </div>
         {% endfor %}
@@ -67,7 +66,38 @@
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+document.querySelectorAll('.like-form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+        e.preventDefault(); // Prevent the form from submitting normally
+        const mealId = this.getAttribute('data-meal-id');
+        const heartButton = this.querySelector('.like-meal-btn'); // Get the button containing the heart emoji
 
+        fetch('/like_meal', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'mealId=' + encodeURIComponent(mealId)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+              if (data.isLiked)
+                heartButton.textContent = '❤️'; // Change heart emoji to red
+              else
+                heartButton.textContent = '🤍'; // Change heart emoji to red
+
+            } else {
+                alert('Error: ' + (data.message || 'Something went wrong'));
+            }
+        })
+        .catch(error => {
+            console.error('Error liking meal:', error);
+        });
+    });
+});
+</script>
 </body>
 </html>
 

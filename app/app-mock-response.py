@@ -300,21 +300,14 @@ def getSubmitForm():
 
         print('session => '+str(session))
         if 'user' in session:
-          mealPlanId, mealIds = storeGeneratedMealPlan(session['user']['uid'], response, submissionForm)
-          '''
-          response['mealPlanId'] = mealPlanId
-          response['breakfast']['mealId'] = mealIds[0]
-          response['lunch']['mealId'] = mealIds[1]
-          response['dinner']['mealId'] = mealIds[2]
-          '''
+          mealPlanId, response = storeGeneratedMealPlan(session['user']['uid'], response, submissionForm)
 
           print(mealPlanId)
-          print(mealIds)
           print(response)
 
         #time.sleep(30)
         if 'user' in session:
-          return render_template("results.html", results=response)
+          return render_template("results.html", results=response, mealPlanId=mealPlanId)
         else:
           return render_template("results.html", results=response) #return render_template("results.html", response=jsonify({"response": response}))
 
@@ -498,7 +491,10 @@ def storeGeneratedMealPlan(userId, response, submissionForm):
       )
       mealIds.append(generatedMeal['name'])
 
-    return mealPlanId, mealIds
+      for mealType, mealId in zip(response, mealIds):
+        response[mealType]['mealId'] = mealId;
+
+    return mealPlanId, response
 
 @app.route('/like_meal_plan', methods=['POST'])
 def like_meal_plan():
@@ -514,21 +510,32 @@ def like_meal_plan():
 
     flash("Meal Plan saved!", "success")
 
-'''
+
 @app.route('/like_meal', methods=['POST'])
-def like_post():
+def like_meal():
     if 'user' not in session:
         flash("Please log in to like posts.", "error")
         return redirect(url_for('login'))
 
-    userId = session['user']['localId']
+    userId = session['user']['uid']
     mealId = request.form['mealId']
 
-    # You can store likes as a list of user IDs under the post
-    db.child("likes").child(mealId).child(userId).set(True)
+    current_like = db.child("meals").child(mealId).child("isLiked").get().val()
+
+    if current_like:
+        # If already liked, toggle to unlike
+        db.child("meals").child(mealId).child("isLiked").set(False)
+    else:
+        # If not liked, toggle to like
+        db.child("meals").child(mealId).child("isLiked").set(True)
 
     flash("Meal saved!", "success")
-'''
+
+    current_like = db.child("meals").child(mealId).child("isLiked").get().val()
+
+    return jsonify({"success": True, "isLiked": current_like, "message": "Meal saved!"})
+
+
 if __name__ == '__main__':
     init_auth()
     #loadLLM()
