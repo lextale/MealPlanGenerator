@@ -505,10 +505,20 @@ def like_meal_plan():
     userId = session['user']['uid']
     mealPlanId = request.form['mealPlanId']
 
-    # Toggle like meal plan
-    db.child("mealPlans").child(mealPlanId).update({"isLiked": not db.child("mealPlans").child(mealPlanId).child("isLiked").get().val()})
+    current_like = db.child("mealPlans").child(mealPlanId).child("isLiked").get().val()
 
-    flash("Meal Plan saved!", "success")
+    if current_like:
+        # If already liked, toggle to unlike
+        db.child("mealPlans").child(mealPlanId).child("isLiked").set(False)
+    else:
+        # If not liked, toggle to like
+        db.child("mealPlans").child(mealPlanId).child("isLiked").set(True)
+
+    flash("Meal saved!", "success")
+
+    current_like = db.child("mealPlans").child(mealPlanId).child("isLiked").get().val()
+
+    return jsonify({"success": True, "isLiked": current_like, "message": "Meal saved!"})
 
 
 @app.route('/like_meal', methods=['POST'])
