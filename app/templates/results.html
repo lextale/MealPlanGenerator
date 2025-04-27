@@ -29,37 +29,48 @@
 
 <div class="container my-5">
     <h1 class="text-center">Your Meal Plan</h1>
-    <div class="row">
-        <!-- Loop through each meal (breakfast, lunch, dinner) -->
-        {% for meal, data in results.items() %}
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body">
-                    <h4 class="card-title"><b>{{ meal.capitalize() }}</b></h4>
-                    <h5 class="card-title"><b>{{ data['mealName'] }}</b></h5>
-                    <h6 class="card-subtitle mb-2 text-muted">Calories: {{ ('%.2f'|format(data['calories']|float)).rstrip('0').rstrip('.') }} kcal</h6>
-                    <p class="card-text">
-                        <strong>Ingredients:</strong><br>
-                        <ul>
-                            {% for ingredient in data['ingredients'] %}
-                            <li>{{ ingredient }}</li>
-                            {% endfor %}
-                        </ul>
-                    </p>
-                    <p><strong>Preparation:</strong> {{ data['instructions'] }}</p>
-                    <p><strong>Cooking Time:</strong> {{ ('%.2f'|format(data['cookingTime']|float)).rstrip('0').rstrip('.') }} min</p>
-                    <p><strong>Macros:</strong><br>
-                        Protein: {{ ('%.2f'|format(data['macros']['protein']|float)).rstrip('0').rstrip('.') }} g<br>
-                        Carbs: {{ ('%.2f'|format(data['macros']['carbs']|float)).rstrip('0').rstrip('.') }} g<br>
-                        Fat: {{ ('%.2f'|format(data['macros']['fat']|float)).rstrip('0').rstrip('.') }} g
-                    </p>
+    <div class="meal-plan-container">
+        <div class="meal-plan-bar">
+            <div class="meal-plan-like-bar">
+                <form class="like-meal-plan-form" id='like-meal-plan-form' data-meal-id="{{ mealPlanId }}">
+                <button type="submit" class="like-meal-plan-btn" id="like-meal-plan-btn">🤍</button>
+                </form>
+            </div>
+        </div>
+        <div class="row">
+            <!-- Loop through each meal (breakfast, lunch, dinner) -->
+            {% for meal, data in results.items() %}
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title"><b>{{ meal.capitalize() }}</b></h4>
+                        <h5 class="card-title"><b>{{ data['mealName'] }}</b></h5>
+                        <h6 class="card-subtitle mb-2 text-muted">Calories: {{ ('%.2f'|format(data['calories']|float)).rstrip('0').rstrip('.') }} kcal</h6>
+                        <p class="card-text">
+                            <strong>Ingredients:</strong><br>
+                            <ul>
+                                {% for ingredient in data['ingredients'] %}
+                                <li>{{ ingredient }}</li>
+                                {% endfor %}
+                            </ul>
+                        </p>
+                        <p><strong>Preparation:</strong> {{ data['instructions'] }}</p>
+                        <p><strong>Cooking Time:</strong> {{ ('%.2f'|format(data['cookingTime']|float)).rstrip('0').rstrip('.') }} min</p>
+                        <p><strong>Macros:</strong><br>
+                            Protein: {{ ('%.2f'|format(data['macros']['protein']|float)).rstrip('0').rstrip('.') }} g<br>
+                            Carbs: {{ ('%.2f'|format(data['macros']['carbs']|float)).rstrip('0').rstrip('.') }} g<br>
+                            Fat: {{ ('%.2f'|format(data['macros']['fat']|float)).rstrip('0').rstrip('.') }} g
+                        </p>
+                    </div>
+                    <div class="meal-like-bar">
+                        <form class="like-form" data-meal-id="{{ data['mealId'] }}">
+                        <button type="submit" class="like-meal-btn" id="like-meal-btn">🤍</button>
+                        </form>
+                    </div>
                 </div>
             </div>
-            <form class="like-form" data-meal-id="{{ data['mealId'] }}">
-              <button type="submit" class="like-meal-btn" id="like-meal-btn">🤍</button>
-            </form>
+            {% endfor %}
         </div>
-        {% endfor %}
     </div>
 </div> 
 <!-- <a href="/">Go back to the form</a> -->
@@ -97,8 +108,37 @@ document.querySelectorAll('.like-form').forEach(form => {
         });
     });
 });
+
+document.querySelectorAll('.like-meal-plan-form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+        e.preventDefault(); // Prevent the form from submitting normally
+        const mealPlanId = this.getAttribute('data-meal-plan-id');
+        const heartButton = this.querySelector('.like-meal-plan-btn'); // Get the button containing the heart emoji
+
+        fetch('/like_meal_plan', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'mealPlanId=' + encodeURIComponent(mealPlanId)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+              if (data.isLiked)
+                heartButton.textContent = '❤️'; // Change heart emoji to red
+              else
+                heartButton.textContent = '🤍'; // Change heart emoji to red
+
+            } else {
+                alert('Error: ' + (data.message || 'Something went wrong'));
+            }
+        })
+        .catch(error => {
+            console.error('Error liking meal plan:', error);
+        });
+    });
+});
 </script>
 </body>
 </html>
-
-    
