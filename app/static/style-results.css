@@ -33,9 +33,12 @@ body {
 }
 
 .card {
-  border-radius: 10px;
+  border-top-left-radius: 0px;
+  border-top-right-radius: 0px;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
   height: 100%;
-  border-color: dimgrey;
+  border-color: transparent;
 }
 
 .card-text {
@@ -77,48 +80,50 @@ button#like-meal-btn {
 }
 
 .meal-plan-container {
-    background-color: dimgrey;
-    border-radius: 20px;
-    padding-left: 10px;
-    padding-right: 10px;
+    background-color: transparent;
+    border-top-left-radius: 20px;
+    padding-left: 0px;
+    padding-right: 0px;
+    border-top-right-radius: 20px;
+    border-bottom-right-radius: 0px;
+    border-bottom-left-radius: 0px;
 }
 
 .meal-plan-bar {
     height: 40px;
-    background-color: dimgrey;
-    border-bottom-right-radius: 8px;
-    border-bottom-left-radius: 8px;
-    border-color: dimgray;
+    background-color: #222;
+    border-color: #222;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    margin-bottom: 0px;
 }
 
 .meal-like-bar {
   height: 40px;
-  background-color: dimgrey;
-  border-bottom-right-radius: 8px;
+  background-color: rgb(105 105 105 / 76%);
+  border-bottom-right-radius: 8px;  
   border-bottom-left-radius: 8px;
-  border-color: dimgray;
+  border-color: rgb(105 105 105 / 76%);
 }
 
 button#like-meal-btn:focus {
   outline: none;
   box-shadow: none;
+  background-color: transparent;
 }
 
 button#like-meal-plan-btn:focus {
   outline: none;
   box-shadow: none;
-  background-color: dimgrey;
-  border-bottom-right-radius: 8px;
-  border-bottom-left-radius: 8px;
-  border-color: dimgray;
+  background-color: transparent;
 }
 
 meal-plan-like-bar {
   height: 40px;
-  background-color: dimgrey;
+  background-color: rgb(105 105 105 / 76%);
   border-bottom-right-radius: 8px;
   border-bottom-left-radius: 8px;
-  border-color: dimgray;
+  border-color: rgb(105 105 105 / 76%);
 }
 
 button#like-meal-plan-btn {
@@ -127,9 +132,6 @@ button#like-meal-plan-btn {
     border-color: transparent;
 }
 
-.meal-plan-bar {
-    border-radius: 80px;;
-}
 
 button#like-meal-plan-btn {
     font-size: x-large;
@@ -138,4 +140,15 @@ button#like-meal-plan-btn {
 button#like-meal-plan-btn:focus {
   outline: none;
   box-shadow: none;
+  background-color: transparent;
+}
+
+.row {
+  margin-right: 0px;
+  margin-left: 0px;
+}
+
+.col-md-4 {
+  padding-left: 1px;
+  padding-right: 1px;
 }

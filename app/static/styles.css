@@ -159,16 +159,19 @@ body {
 select#diet_type {
     width: 100%;
     max-width: fit-content;
+    font-size: medium;
 }
 
 input#age {
-    width: 100%;
-    max-width: 30px;
+    width: 48px;
+    text-align: center;
+    font-size: medium;
 }
 
 select#gender {
     width: 100%;
     max-width: fit-content;
+    font-size: medium;
 }
 
 html {
