@@ -12,6 +12,11 @@ body {
   text-align: -webkit-center;
 }
 
+a#logo {
+    text-decoration: none;
+    color: white;
+}
+
 .container {
   background: white;
   padding: 2rem;

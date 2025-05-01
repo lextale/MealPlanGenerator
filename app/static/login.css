@@ -88,3 +88,8 @@ button:hover {
   margin-right: 0px;
   box-sizing: border-box;
 }
+
+a#logo {
+    text-decoration: none;
+    color: white;
+}

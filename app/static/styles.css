@@ -11,6 +11,11 @@
     font-weight: bold;
 }
 
+a#logo {
+    text-decoration: none;
+    color: white;
+}
+
 /* Add some padding to the meal preparation text */
 .card-text {
     font-size: 1.1rem;

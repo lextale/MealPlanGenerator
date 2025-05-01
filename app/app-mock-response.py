@@ -339,7 +339,7 @@ def login():
             session['user'] = {
                 "email": email,
                 "uid": user['localId'],
-                "username": db.child("users").child(user['localId']).child("username").get().val()
+                "username": db.child("users").child(user['localId']).child("username").get(user['idToken']).val()
             }
             flash("Logged in successfully!", "success")
             return redirect(url_for('index'))
@@ -500,7 +500,7 @@ def storeGeneratedMealPlan(userId, response, submissionForm):
 def like_meal_plan():
     if 'user' not in session:
         flash("Please log in to like meal plans.", "error")
-        return redirect(url_for('login'))
+        return jsonify({"success": False, "redirect": url_for('login'), "message": "Please log in."})
 
     userId = session['user']['uid']
     mealPlanId = request.form['mealPlanId']
@@ -524,8 +524,8 @@ def like_meal_plan():
 @app.route('/like_meal', methods=['POST'])
 def like_meal():
     if 'user' not in session:
-        flash("Please log in to like posts.", "error")
-        return redirect(url_for('login'))
+        flash("Please log in to like meals.", "error")
+        return jsonify({"success": False, "redirect": url_for('login'), "message": "Please log in."})
 
     userId = session['user']['uid']
     mealId = request.form['mealId']
