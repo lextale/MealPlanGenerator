@@ -545,6 +545,14 @@ def like_meal():
 
     return jsonify({"success": True, "isLiked": current_like, "message": "Meal saved!"})
 
+@app.route('/saved', methods=['GET'])
+def saved():
+    if 'user' not in session:
+        flash("Please log in to view your profile.", "warning")
+        return redirect(url_for('login'))
+
+    user = session['user']
+    return render_template("saved.html", user=user)
 
 if __name__ == '__main__':
     init_auth()

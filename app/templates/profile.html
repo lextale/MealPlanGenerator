@@ -14,6 +14,8 @@
   <div class="nav-right">
     <a href="/" id="home">Home</a>
     {% if 'user' in session %}
+    <a href="{{ url_for('profile') }}" id="profile">Profile</a>
+    <a href="{{ url_for('saved') }}" id="saved">Saved</a>
     <a href="{{ url_for('logout') }}" id="logout">Log out</a>
     {% endif %}
   </div>

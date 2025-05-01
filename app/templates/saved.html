@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>User Profile</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='saved.css') }}">
+</head>
+
+<body>
+  <nav class="navbar">
+    <div class="nav-left">
+      <a href="/" id="logo"><span class="logo">Nutrition Generator</span></a>
+    </div>
+    <div class="nav-right">
+      <a href="/" id="home">Home</a>
+      {% if 'user' in session %}
+      <a href="{{ url_for('profile') }}" id="profile">Profile</a>
+      <a href="{{ url_for('saved') }}" id="saved">Saved</a>
+      <a href="{{ url_for('logout') }}" id="logout">Log out</a>
+      {% endif %}
+    </div>
+  </nav>
+
+  {% if 'user' in session %}
+  <div class="container">
+    <!-- Sidebar -->
+    <div class="side-bar">
+      <form action="{{ url_for('saved') }}" method="POST">
+        <button type="submit" name="content_type" value="meals">Meals</button>
+        <button type="submit" name="content_type" value="meal_plans">Meal Plans</button>
+      </form>
+    </div>
+
+    <!-- Main content area -->
+    <div class="main-section">
+      <div class="filter-bar">
+        <label for="diet-filter">Filter by diet:</label>
+        <select id="diet-filter" name="diet" onchange="filterByDiet(this.value)">
+          <option value="">All</option>
+          <option value="vegan">Vegan</option>
+          <option value="keto">Keto</option>
+          <option value="vegetarian">Vegetarian</option>
+          <!-- Add more options as needed -->
+        </select>
+      </div>
+
+      <div class="feed">
+        <!-- Dynamically rendered meals or meal plans here -->
+        {% for item in saved_items %}
+          <div class="card">
+            <h3>{{ item.title }}</h3>
+            <p>{{ item.description }}</p>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <script>
+    function filterByDiet(diet) {
+      // Implement fetch or form submission logic based on diet
+      console.log("Filtering by diet:", diet);
+    }
+  </script>
+</body>
+</html>
