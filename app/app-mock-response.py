@@ -552,7 +552,12 @@ def saved():
         return redirect(url_for('login'))
 
     user = session['user']
-    return render_template("saved.html", user=user)
+    savedMeals = db.child("meals").order_by_child("user").equal_to(user['uid']).get().val()
+    savedMealPlans = db.child("mealPlans").order_by_child("user").equal_to(user['uid']).get().val()
+
+    print(savedMeals)
+
+    return render_template("saved.html", user=user, savedMeals=savedMeals, savedMealPlans=savedMealPlans)
 
 if __name__ == '__main__':
     init_auth()

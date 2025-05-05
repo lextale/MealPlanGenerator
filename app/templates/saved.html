@@ -46,13 +46,48 @@
       </div>
 
       <div class="feed">
-        <!-- Dynamically rendered meals or meal plans here -->
-        {% for item in saved_items %}
-          <div class="card">
-            <h3>{{ item.title }}</h3>
-            <p>{{ item.description }}</p>
+        <div class="outer-container">
+          <div class="middle-container">
+            <div class="inner-container">
+              <!-- Dynamically rendered meals or meal plans here -->
+              {% if savedMeals %}
+                {% for meal_id, meal in savedMeals.items() %}
+                  <article class="feed-item">
+                    <header>
+                      <h2>{{ meal.mealName }}</h2>
+                    </header>
+                    <div class="details">
+                      <p><strong>Calories:</strong> {{ meal.calories }}</p>
+                      <p><strong>Cooking Time:</strong> {{ meal.cookingTime }} minutes</p>
+                      <p><strong>Meal Type:</strong> {{ meal.mealType }}</p>
+
+                      <h4>Ingredients:</h4>
+                      <ul>
+                        {% for ingredient in meal.ingredients %}
+                          <li>{{ ingredient }}</li>
+                        {% endfor %}
+                      </ul>
+
+                      <h4>Macros:</h4>
+                      <ul>
+                        <li>Protein: {{ meal.macros.protein }}g</li>
+                        <li>Fat: {{ meal.macros.fat }}g</li>
+                        <li>Carbs: {{ meal.macros.carbs }}g</li>
+                      </ul>
+
+                      <h4>Preparation:</h4>
+                      <p>{{ meal.preparation }}</p>
+                    </div>
+                  <div class="feed-item-footer">
+                  </div>
+                  </div>
+                {% endfor %}
+              {% else %}
+                <p>No meals saved.</p>
+              {% endif %}
+            </div>
           </div>
-        {% endfor %}
+        </div>
       </div>
     </div>
   </div>
