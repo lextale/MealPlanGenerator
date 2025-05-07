@@ -177,7 +177,7 @@ body {
 .side-bar {
   width: 200px;
   background-color: #f0f0f0;
-  height: 100vh;
+  height: inherit;
 }
 
 .side-bar form {
@@ -281,5 +281,48 @@ select#diet-filter {
 }
 
 .feed-item {
-  border-radius: 12px;
+    border-radius: 15px;
 }
+
+header {
+    background-color: #333;
+    padding: 1px;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+}
+
+.details {
+    padding: 15px;
+}
+
+.feed-item-footer {
+    margin-bottom: 5px;
+    background-color: #333;
+    min-height: 50px;
+    border-bottom-right-radius: 15px;
+    border-bottom-left-radius: 15px;
+}
+
+h2 {
+  text-align: start;
+  color: #fff;
+  padding: 10px;
+}
+
+.feed {
+    align-items: anchor-center;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
