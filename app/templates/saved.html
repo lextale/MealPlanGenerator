@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>User Profile</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='saved.css') }}">
+  <script src="{{ url_for('static', filename='saved.js') }}"></script>
 </head>
 
 <body>
@@ -52,35 +53,42 @@
               <!-- Dynamically rendered meals or meal plans here -->
               {% if savedMeals %}
                 {% for meal_id, meal in savedMeals.items() %}
-                  <article class="feed-item">
-                    <header>
-                      <h2>{{ meal.mealName }}</h2>
-                    </header>
-                    <div class="details">
-                      <p><strong>Calories:</strong> {{ meal.calories }}</p>
-                      <p><strong>Cooking Time:</strong> {{ meal.cookingTime }} minutes</p>
-                      <p><strong>Meal Type:</strong> {{ meal.mealType }}</p>
+                  <div id="{{ meal_id }}">
+                    <article class="feed-item">
+                      <header>
+                        <div class="meal-like-bar">
+                          <form class="like-form" data-meal-id="{{ meal_id }}">
+                            <button type="submit" class="like-meal-btn" id="like-meal-btn">❤️</button>
+                          </form>
+                          <h2>{{ meal.mealName }}</h2>
+                        </div>
+                      </header>
+                      <div class="details">
+                        <p><strong>Calories:</strong> {{ meal.calories }}</p>
+                        <p><strong>Cooking Time:</strong> {{ meal.cookingTime }} minutes</p>
+                        <p><strong>Meal Type:</strong> {{ meal.mealType }}</p>
 
-                      <h4>Ingredients:</h4>
-                      <ul>
-                        {% for ingredient in meal.ingredients %}
-                          <li>{{ ingredient }}</li>
-                        {% endfor %}
-                      </ul>
+                        <h4>Ingredients:</h4>
+                        <ul>
+                          {% for ingredient in meal.ingredients %}
+                            <li>{{ ingredient }}</li>
+                          {% endfor %}
+                        </ul>
 
-                      <h4>Macros:</h4>
-                      <ul>
-                        <li>Protein: {{ meal.macros.protein }}g</li>
-                        <li>Fat: {{ meal.macros.fat }}g</li>
-                        <li>Carbs: {{ meal.macros.carbs }}g</li>
-                      </ul>
+                        <h4>Macros:</h4>
+                        <ul>
+                          <li>Protein: {{ meal.macros.protein }}g</li>
+                          <li>Fat: {{ meal.macros.fat }}g</li>
+                          <li>Carbs: {{ meal.macros.carbs }}g</li>
+                        </ul>
 
-                      <h4>Preparation:</h4>
-                      <p>{{ meal.preparation }}</p>
-                    </div>
-                  <div class="feed-item-footer">
+                        <h4>Preparation:</h4>
+                        <p>{{ meal.preparation }}</p>
+                      </div>
+                      <div class="feed-item-footer">
+                      </div>
+                    </article>
                   </div>
-                </article>
                 {% endfor %}
               {% else %}
                 <p>No meals saved.</p>
