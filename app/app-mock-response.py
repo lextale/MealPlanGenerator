@@ -22,7 +22,6 @@ app = Flask(__name__)
 app.secret_key = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
 firebase_config = {}
 
-
 firebase = pyrebase.initialize_app(firebase_config)
 auth = firebase.auth()
 db = firebase.database()
@@ -553,11 +552,13 @@ def saved():
 
     user = session['user']
     savedMeals = db.child("meals").order_by_child("user").equal_to(user['uid']).get().val()
+    likedMeals = {meal_id: meal for meal_id, meal in savedMeals.items() if meal.get('isLiked')}
     savedMealPlans = db.child("mealPlans").order_by_child("user").equal_to(user['uid']).get().val()
+    likedMealPlans = {meal_plan_id: mealPlan for meal_plan_id, mealPlan in savedMealPlans.items() if mealPlan.get('isLiked')}
 
     print(savedMeals)
 
-    return render_template("saved.html", user=user, savedMeals=savedMeals, savedMealPlans=savedMealPlans)
+    return render_template("saved.html", user=user, savedMeals=likedMeals, savedMealPlans=likedMealPlans)
 
 if __name__ == '__main__':
     init_auth()
