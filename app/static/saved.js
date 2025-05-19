@@ -38,3 +38,33 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Get buttons and content sections
+  const showMealsBtn = document.getElementById('show-meals-btn');
+  const showMealPlansBtn = document.getElementById('show-meal-plans-btn');
+  const mealsContent = document.getElementById('meals-content');
+  const mealPlansContent = document.getElementById('meal-plans-content');
+
+  // Event listener for "Meals" button
+  showMealsBtn.addEventListener('click', function() {
+    mealsContent.style.display = 'block';  // Show meals
+    mealPlansContent.style.display = 'none';  // Hide meal plans
+  });
+
+  // Event listener for "Meal Plans" button
+  showMealPlansBtn.addEventListener('click', function() {
+    mealsContent.style.display = 'none';  // Hide meals
+    mealPlansContent.style.display = 'block';  // Show meal plans
+  });
+});
+
+
+function filterData(type) {
+    // Update the URL with the chosen type
+    const url = new URL(window.location.href);
+    url.searchParams.set('type', type);  // Set type to either 'meals' or 'mealPlans'
+    
+    // Reload the page with the updated filter
+    window.location.href = url.toString();
+}
