@@ -1,36 +1,40 @@
-document.querySelectorAll('.like-form').forEach(form => {
-  form.addEventListener('submit', function (e) {
-    e.preventDefault();
+document.addEventListener('DOMContentLoaded', function () {
+  // Get all like buttons (heart emoji buttons)
+  const likeButtons = document.querySelectorAll('.like-form');
 
-    const mealId = this.dataset.mealId;
+  likeButtons.forEach(button => {
+    button.addEventListener('click', function(e) {
+      e.preventDefault();  // Prevent the form submission from reloading the page
 
-    fetch('/like_meal', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: `mealId=${encodeURIComponent(mealId)}`
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        if (!data.isLiked) {
-          // Remove the meal card from the DOM
-          const mealCard = form.closest('.meal-card');
-          if (mealCard) {
-            mealCard.remove();
+      const mealId = button.getAttribute('data-meal-id');  // Get the mealId from the button's data attribute
+
+      // Send AJAX request to Flask route
+      fetch('/like_meal', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          'mealId': mealId  // Send the mealId in the body of the request
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Find the div using the mealId and remove it from the page
+          console.log(mealId);
+          const mealDiv = document.getElementById(mealId);
+          if (mealDiv) {
+            mealDiv.remove();  // Remove the entire div with the mealId
+            console.log(`Removed meal with ID: ${mealId}`);
+          } else {
+            console.log('Meal div not found');
           }
-        } else {
-          // Optionally toggle heart icon if still liked
-          const btn = form.querySelector('.like-meal-btn');
-          if (btn) btn.textContent = '❤️'; // or 🤍 if unliked
         }
-      } else if (data.redirect) {
-        window.location.href = data.redirect;
-      }
-    })
-    .catch(error => {
-      console.error('Error:', error);
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
     });
   });
 });
