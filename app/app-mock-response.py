@@ -551,14 +551,19 @@ def saved():
         return redirect(url_for('login'))
 
     user = session['user']
+
     savedMeals = db.child("meals").order_by_child("user").equal_to(user['uid']).get().val()
     likedMeals = {meal_id: meal for meal_id, meal in savedMeals.items() if meal.get('isLiked')}
     savedMealPlans = db.child("mealPlans").order_by_child("user").equal_to(user['uid']).get().val()
     likedMealPlans = {meal_plan_id: mealPlan for meal_plan_id, mealPlan in savedMealPlans.items() if mealPlan.get('isLiked')}
 
+    availableDietTypes = ['All', 'Not specified']
+    availableDietTypes.extend([mealPlan['submissionFormId']['diet_type'] for meal_plan_id, mealPlan in savedMealPlans.items() if mealPlan.get('isLiked') and mealPlan['submissionFormId']['diet_type'] != 'None'])
+    availableDietTypes = set(availableDietTypes)
+    
     print(savedMeals)
 
-    return render_template("saved.html", user=user, savedMeals=likedMeals, savedMealPlans=likedMealPlans)
+    return render_template("saved.html", user=user, savedMeals=likedMeals, savedMealPlans=likedMealPlans, availableDietTypes=availableDietTypes)
 
 if __name__ == '__main__':
     init_auth()
