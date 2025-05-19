@@ -27,10 +27,8 @@
   <div class="container">
     <!-- Sidebar -->
     <div class="side-bar">
-      <form action="{{ url_for('saved') }}" method="POST">
-        <button type="submit" name="content_type" value="meals">Meals</button>
-        <button type="submit" name="content_type" value="meal_plans">Meal Plans</button>
-      </form>
+      <button type="button" id="show-meals-btn">Meals</button>
+      <button type="button" id="show-meal-plans-btn">Meal Plans</button>
     </div>
 
     <!-- Main content area -->
@@ -38,14 +36,14 @@
       <div class="filter-bar">
         <label for="diet-filter">Filter by diet:</label>
         <select id="diet-filter" name="diet" onchange="filterByDiet(this.value)">
-          <option value="">All</option>
-          <option value="vegan">Vegan</option>
-          <option value="keto">Keto</option>
-          <option value="vegetarian">Vegetarian</option>
+          {% for diet in availableDietTypes %}
+            <option value="{{ diet }}" {% if diet == diet_filter %}selected{% endif %}>{{ diet.capitalize() }}</option>
+          {% endfor %}
           <!-- Add more options as needed -->
         </select>
       </div>
 
+      <div id="meals-content">
       <div class="feed">
         <div class="outer-container">
           <div class="middle-container">
@@ -100,6 +98,9 @@
     </div>
   </div>
   {% endif %}
+  </div>
+  <div id="meal-plans-content">
+  </div>
 
   <script>
     function filterByDiet(diet) {
