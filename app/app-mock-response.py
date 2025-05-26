@@ -480,7 +480,8 @@ def storeGeneratedMealPlan(userId, response, submissionForm):
           "timestamptUnliked": "", 
           "isLiked": False, 
           "mealType": mealType, 
-          "mealName": mealInfo['mealName'], 
+          "mealName": mealInfo['mealName'],
+          "dietType": submissionForm["diet_type"],
           "ingredients": mealInfo['ingredients'], 
           "preparation": mealInfo['instructions'], 
           "cookingTime": mealInfo['cookingTime'], 
@@ -489,7 +490,6 @@ def storeGeneratedMealPlan(userId, response, submissionForm):
         }
       )
       mealIds.append(generatedMeal['name'])
-
       for mealType, mealId in zip(response, mealIds):
         response[mealType]['mealId'] = mealId;
 
@@ -552,18 +552,63 @@ def saved():
 
     user = session['user']
 
-    savedMeals = db.child("meals").order_by_child("user").equal_to(user['uid']).get().val()
+    # Get all meals for user
+    savedMeals = db.child("meals").order_by_child("user").equal_to(user['uid']).get().val() or {}
     likedMeals = {meal_id: meal for meal_id, meal in savedMeals.items() if meal.get('isLiked')}
-    savedMealPlans = db.child("mealPlans").order_by_child("user").equal_to(user['uid']).get().val()
-    likedMealPlans = {meal_plan_id: mealPlan for meal_plan_id, mealPlan in savedMealPlans.items() if mealPlan.get('isLiked')}
 
-    availableDietTypes = ['All', 'Not specified']
-    availableDietTypes.extend([mealPlan['submissionFormId']['diet_type'] for meal_plan_id, mealPlan in savedMealPlans.items() if mealPlan.get('isLiked') and mealPlan['submissionFormId']['diet_type'] != 'None'])
-    availableDietTypes = set(availableDietTypes)
-    
-    print(savedMeals)
+    # Get all meal plans for user
+    savedMealPlans = db.child("mealPlans").order_by_child("user").equal_to(user['uid']).get().val() or {}
+    likedMealPlans = {mp_id: mp for mp_id, mp in savedMealPlans.items() if mp.get('isLiked')}
 
-    return render_template("saved.html", user=user, savedMeals=likedMeals, savedMealPlans=likedMealPlans, availableDietTypes=availableDietTypes)
+    # Build dict mapping mealPlanId -> list of meals belonging to it (filtering from savedMeals)
+    mealPlanMeals = {}
+    for plan_id, plan_data in likedMealPlans.items():
+        # Filter meals in Python by mealPlanId == plan_id
+        filtered_meals = {meal_id: meal for meal_id, meal in savedMeals.items() if meal.get('mealPlanId') == plan_id}
+        mealPlanMeals[plan_id] = {
+            "mealPlan": plan_data,
+            "meals": filtered_meals
+        }
+
+    # Collect available diet types from meals and meal plans
+    availableDietTypes = set('All')
+
+    # Add diet types from all saved meals
+    for meal in savedMeals.values():
+        dietType = meal.get("dietType")
+        if not dietType:
+            availableDietTypes.add('Not specified')
+        else:
+            availableDietTypes.add(dietType)
+
+    # Add diet types from all saved meal plans
+    for mealPlan in savedMealPlans.values():
+        dietType = mealPlan.get("submissionFormId").get("diet_type")
+        if not dietType:
+            availableDietTypes.add('Not specified')
+        else:
+            availableDietTypes.add(dietType)
+
+    # Add diet types from submissionFormId inside liked meal plans (if exists and not None)
+    for mealPlan in likedMealPlans.values():
+        submissionForm = mealPlan.get('submissionFormId', {})
+        diet_type = submissionForm.get('diet_type')
+        if diet_type and diet_type != 'None':
+            availableDietTypes.add(diet_type)
+
+    # Convert set to list for template use
+    availableDietTypes = list(availableDietTypes)
+
+    print(savedMeals)  # Debug print
+
+    return render_template(
+        "saved.html",
+        user=user,
+        savedMeals=likedMeals,
+        savedMealPlans=likedMealPlans,
+        availableDietTypes=availableDietTypes,
+        mealPlanMeals=mealPlanMeals
+    )
 
 if __name__ == '__main__':
     init_auth()
