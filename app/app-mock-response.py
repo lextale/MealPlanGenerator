@@ -610,6 +610,31 @@ def saved():
         mealPlanMeals=mealPlanMeals
     )
 
+@app.route('/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'GET':
+      return render_template('forgot_password.html')
+    if request.method == 'POST':
+        email = request.form.get('email')
+        if not email:
+            flash("Email is required", "error")
+            return render_template('login.html', email=email)
+
+        try:
+            # reset_link = auth.generate_password_reset_link(email)
+            #print(f"Send this reset link to the user: {reset_link}")
+            auth.send_password_reset_email(email)
+
+            flash("Password reset email sent! Check your inbox.", "success")
+            return redirect(url_for('forgot_password'))
+
+        except Exception as e:
+            flash(f"Error: {str(e)}", "error")
+            return render_template('login.html', email=email)
+
+    # GET request
+    return render_template('login.html')
+
 if __name__ == '__main__':
     init_auth()
     #loadLLM()
