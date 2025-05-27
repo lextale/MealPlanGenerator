@@ -50,38 +50,38 @@
             <div class="inner-container">
               {% if savedMeals %}
                 {% for meal_id, meal in savedMeals.items() %}
-                <div id="{{ meal_id }}">
-                  <article class="feed-item">
-                    <header>
-                      <div class="meal-like-bar">
-                        <form class="like-form" data-meal-id="{{ meal_id }}">
-                          <button type="submit" class="like-meal-btn" id="like-meal-btn">❤️</button>
-                        </form>
-                        <h2>{{ meal.mealName }}</h2>
+                  <div id="{{ meal_id }}">
+                    <article class="feed-item">
+                      <header>
+                        <div class="meal-like-bar">
+                          <form class="like-form" data-meal-id="{{ meal_id }}">
+                            <button type="submit" class="like-meal-btn" id="like-meal-btn">❤️</button>
+                          </form>
+                          <h2>{{ meal.mealName }}</h2>
+                        </div>
+                      </header>
+                      <div class="details">
+                        <p><strong>Calories:</strong> {{ meal.calories }}</p>
+                        <p><strong>Cooking Time:</strong> {{ meal.cookingTime }} minutes</p>
+                        <p><strong>Meal Type:</strong> {{ meal.mealType }}</p>
+                        <h4>Ingredients:</h4>
+                        <ul>
+                          {% for ingredient in meal.ingredients %}
+                            <li>{{ ingredient }}</li>
+                          {% endfor %}
+                        </ul>
+                        <h4>Macros:</h4>
+                        <ul>
+                          <li>Protein: {{ meal.macros.protein }}g</li>
+                          <li>Fat: {{ meal.macros.fat }}g</li>
+                          <li>Carbs: {{ meal.macros.carbs }}g</li>
+                        </ul>
+                        <h4>Preparation:</h4>
+                        <p>{{ meal.preparation }}</p>
                       </div>
-                    </header>
-                    <div class="details">
-                      <p><strong>Calories:</strong> {{ meal.calories }}</p>
-                      <p><strong>Cooking Time:</strong> {{ meal.cookingTime }} minutes</p>
-                      <p><strong>Meal Type:</strong> {{ meal.mealType }}</p>
-                      <h4>Ingredients:</h4>
-                      <ul>
-                        {% for ingredient in meal.ingredients %}
-                          <li>{{ ingredient }}</li>
-                        {% endfor %}
-                      </ul>
-                      <h4>Macros:</h4>
-                      <ul>
-                        <li>Protein: {{ meal.macros.protein }}g</li>
-                        <li>Fat: {{ meal.macros.fat }}g</li>
-                        <li>Carbs: {{ meal.macros.carbs }}g</li>
-                      </ul>
-                      <h4>Preparation:</h4>
-                      <p>{{ meal.preparation }}</p>
-                    </div>
-                    <div class="feed-item-footer"></div>
-                  </article>
-                </div>
+                      <div class="feed-item-footer"></div>
+                    </article>
+                  </div>
                 {% endfor %}
               {% else %}
                 <p>No meals saved.</p>
@@ -94,55 +94,55 @@
 
     <!-- Meal Plans content -->
     {% for mealPlanId, mealPlanData in mealPlanMeals.items() %}
-    <div id="meal-plans-content">
-      <div class="meal-plan-container">
-        <div class="meal-plan-bar">
-          <div class="meal-plan-like-bar">
-            <form class="like-meal-plan-form" data-meal-plan-id="{{ mealPlanId }}">
-              <button type="submit" class="like-meal-plan-btn" id="like-meal-plan-btn">🤍</button>
-            </form>
+      <div id="meal-plans-content">
+        <div class="meal-plan-container">
+          <div class="meal-plan-bar">
+            <div class="meal-plan-like-bar">
+              <form class="like-meal-plan-form" data-meal-plan-id="{{ mealPlanId }}">
+                <button type="submit" class="like-meal-plan-btn" id="like-meal-plan-btn">🤍</button>
+              </form>
+            </div>
           </div>
-        </div>
 
-        <!-- Each meal plan's meals -->
-        <div class="row">
-          {% for mealId, data in mealPlanData.meals.items() %}
-            <div class="col-md-4">
-              <div class="card-meal-plan">
-                <div class="card-body">
-                  <h4 class="card-title"><b>{{ data.get('mealType', 'Meal').capitalize() }}</b></h4>
-                  <h5 class="card-title"><b>{{ data.get('mealName', 'Unnamed Meal') }}</b></h5>
-                  <h6 class="card-subtitle mb-2 text-muted">
-                    Calories: {{ ('%.2f'|format(data.get('calories', 0)|float)).rstrip('0').rstrip('.') }} kcal
-                  </h6>
-                  <p class="card-text">
-                    <strong>Ingredients:</strong><br>
-                    <ul>
-                      {% for ingredient in data.get('ingredients', []) %}
-                        <li>{{ ingredient }}</li>
-                      {% endfor %}
-                    </ul>
-                  </p>
-                  <p><strong>Preparation:</strong> {{ data.get('instructions', 'N/A') }}</p>
-                  <p><strong>Cooking Time:</strong> {{ ('%.2f'|format(data.get('cookingTime', 0)|float)).rstrip('0').rstrip('.') }} min</p>
-                  <p><strong>Macros:</strong><br>
-                    Protein: {{ ('%.2f'|format(data.get('macros', {}).get('protein', 0)|float)).rstrip('0').rstrip('.') }} g<br>
-                    Carbs: {{ ('%.2f'|format(data.get('macros', {}).get('carbs', 0)|float)).rstrip('0').rstrip('.') }} g<br>
-                    Fat: {{ ('%.2f'|format(data.get('macros', {}).get('fat', 0)|float)).rstrip('0').rstrip('.') }} g
-                  </p>
-                </div> <!-- .card-body -->
-                <div class="meal-like-bar-on-meal-plan">
-                    <form class="like-form" data-meal-id="{{ data.get('mealId', '') }}">
-                      <button type="submit" class="like-meal-btn" id="like-meal-btn-meal-plan">🤍</button>
-                    </form>
-                </div>
-              {% endfor %}
-              </div> <!-- .card-meal-plan -->
-            </div> <!-- .col-md-4 -->
-          {% endfor %}
-        </div> <!-- .row (meal plans) -->
-      </div> <!-- meal-plans-container -->
-    </div> <!-- meal-plans-content -->
+          <!-- Each meal plan's meals -->
+          <div class="row">
+            {% for mealId, data in mealPlanData.meals.items() %}
+              <div class="col-md-4">
+                <div class="card-meal-plan">
+                  <div class="card-body">
+                    <h4 class="card-title"><b>{{ data.get('mealType', 'Meal').capitalize() }}</b></h4>
+                    <h5 class="card-title"><b>{{ data.get('mealName', 'Unnamed Meal') }}</b></h5>
+                    <h6 class="card-subtitle mb-2 text-muted">
+                      Calories: {{ ('%.2f'|format(data.get('calories', 0)|float)).rstrip('0').rstrip('.') }} kcal
+                    </h6>
+                    <p class="card-text">
+                      <strong>Ingredients:</strong><br>
+                      <ul>
+                        {% for ingredient in data.get('ingredients', []) %}
+                          <li>{{ ingredient }}</li>
+                        {% endfor %}
+                      </ul>
+                    </p>
+                    <p><strong>Preparation:</strong> {{ data.get('instructions', 'N/A') }}</p>
+                    <p><strong>Cooking Time:</strong> {{ ('%.2f'|format(data.get('cookingTime', 0)|float)).rstrip('0').rstrip('.') }} min</p>
+                    <p><strong>Macros:</strong><br>
+                      Protein: {{ ('%.2f'|format(data.get('macros', {}).get('protein', 0)|float)).rstrip('0').rstrip('.') }} g<br>
+                      Carbs: {{ ('%.2f'|format(data.get('macros', {}).get('carbs', 0)|float)).rstrip('0').rstrip('.') }} g<br>
+                      Fat: {{ ('%.2f'|format(data.get('macros', {}).get('fat', 0)|float)).rstrip('0').rstrip('.') }} g
+                    </p>
+                  </div> <!-- .card-body -->
+                  <div class="meal-like-bar-on-meal-plan">
+                      <form class="like-form" data-meal-id="{{ data.get('mealId', '') }}">
+                        <button type="submit" class="like-meal-btn" id="like-meal-btn-meal-plan">🤍</button>
+                      </form>
+                  </div>
+                </div> <!-- .card-meal-plan -->
+              </div> <!-- .col-md-4 -->
+            {% endfor %}
+          </div> <!-- .row (meal plans) -->
+        </div> <!-- meal-plans-container -->
+      </div> <!-- meal-plans-content -->
+    {% endfor %}
 
   </div> <!-- main-section -->
 </div> <!-- container -->

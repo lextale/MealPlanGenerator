@@ -338,20 +338,22 @@ background-color: transparent;
 .row {
   margin-right: 0px;
   margin-left: 0px;
-  display: -ms-flexbox;
-  display: flex;
-  -ms-flex-wrap: wrap;
-  flex-wrap: wrap;
+  display: grid;
+  grid-auto-rows: auto;
+  align-content: stretch;
+  justify-content: center;
+  justify-items: start;
+  align-items: stretch;
 }
 
 .col-md-4 {
   padding-left: 1px;
   padding-right: 1px;
+  grid-row: none;
 }
 
 .card-meal-plan {
-  background-color: white;
-  padding: 15px;
+  background-color: whitesmoke;
   border-radius: 8px;
   box-shadow: 0 0 6px rgba(0,0,0,0.1);
 }
@@ -371,7 +373,6 @@ background-color: transparent;
 }
 
 .meal-like-bar-on-meal-plan {
-  height: 40px;
   background-color: rgb(105 105 105 / 76%);
   border-bottom-right-radius: 8px;  
   border-bottom-left-radius: 8px;
@@ -385,18 +386,17 @@ button#like-meal-btn-meal-plan {
 }
 
 .meal-plan-container {
-    max-width: 250px;
-    background-color: transparent;
-    border-top-left-radius: 20px;
-    padding-left: 0px;
-    padding-right: 0px;
-    border-top-right-radius: 20px;
-    border-bottom-right-radius: 0px;
-    border-bottom-left-radius: 0px;
+  min-width: 280px;
+  background-color: transparent;
+  border-top-left-radius: 20px;
+  padding-left: 0px;
+  padding-right: 0px;
+  border-top-right-radius: 20px;
+  border-bottom-right-radius: 0px;
+  border-bottom-left-radius: 0px;
 }
 
 .meal-plan-bar {
-    height: 40px;
     background-color: #222;
     border-color: #222;
     border-top-left-radius: 20px;
@@ -425,4 +425,9 @@ button#like-meal-plan-btn:focus {
   outline: none;
   box-shadow: none;
   background-color: transparent;
+}
+
+div#meal-plans-content {
+  width: max-content;
+  justify-self: center;
 }
