@@ -102,12 +102,21 @@
               <form class="like-meal-plan-form" data-meal-plan-id="{{ mealPlanId }}">
                 <button type="submit" class="like-meal-plan-btn" id="like-meal-plan-btn">❤️</button>
               </form>
-              <p><strong>Diet Type:</strong> {{ mealPlanData.get('mealPlan').get('submissionFormId').get('diet_type', 'N/A') }}&nbsp;&nbsp;&nbsp;</p>
-              <p><strong>Gender:</strong> {{ mealPlanData.get('mealPlan').get('submissionFormId').get('gender', 'N/A') }}&nbsp;&nbsp;&nbsp;</p>
-              <p><strong>Age:</strong> {{ 'Any' if mealPlanData.get('mealPlan', {}).get('submissionFormId', {}).get('age', '').strip() == '' else mealPlanData.get('mealPlan', {}).get('submissionFormId', {}).get('age') }}&nbsp;&nbsp;&nbsp;</p>
+              <p class="timestampCreated" data-time="{{ mealPlanData.get('mealPlan').get('timestampCreated') }}">
+                <strong></strong>
+              </p>
             </div>
           </div>
-
+          <div class="submission-form-info">
+            
+              <p><strong>Diet Type:</strong> {{ mealPlanData.get('mealPlan').get('submissionFormId').get('diet_type', 'N/A') }}&nbsp;&nbsp;&nbsp;</p>
+              <p><strong>Gender:</strong> {{ mealPlanData.get('mealPlan').get('submissionFormId').get('gender', 'N/A') }}&nbsp;&nbsp;&nbsp;</p>
+              <p><strong>Age:</strong> {{ 'Any' if mealPlanData.get('mealPlan', {}).get('submissionFormId', {}).get('age', '').strip() == '' else mealPlanData.get('mealPlan', {}).get('submissionFormId', {}).get('age') }}</p>
+              <p><strong>Goals:</strong> {{ 'None' if mealPlanData.get('mealPlan', {}).get('submissionFormId', {}).get('goals', '') == [] else mealPlanData.get('mealPlan', {}).get('submissionFormId', {}).get('goals') }}</p>
+              <p><strong>Allergies:</strong> {{ 'None' if mealPlanData.get('mealPlan', {}).get('submissionFormId', {}).get('allergies', '') == [] else mealPlanData.get('mealPlan', {}).get('submissionFormId', {}).get('allergies') }}</p>
+              <p><strong>Intolerancies:</strong> {{ 'None' if mealPlanData.get('mealPlan', {}).get('submissionFormId', {}).get('intolerancies', '') == [] else mealPlanData.get('mealPlan', {}).get('submissionFormId', {}).get('intolerancies') }}</p>
+            
+          </div>
           <!-- Each meal plan's meals -->
           <div class="row">
             {% for mealId, data in mealPlanData.meals.items() %}
@@ -189,6 +198,16 @@
           });
       });
   });
+
+    document.querySelectorAll('.timestampCreated').forEach(el => {
+      const unixTime = parseInt(el.dataset.time);
+      if (!isNaN(unixTime)) {
+        const localTime = new Date(unixTime * 1000).toLocaleString();
+        el.querySelector('strong').textContent = localTime;
+      } else {
+        el.querySelector('strong').textContent = 'Invalid timestamp';
+      }
+    });
   </script>
 </body>
 </html>

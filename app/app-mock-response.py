@@ -460,9 +460,9 @@ def storeGeneratedMealPlan(userId, response, submissionForm):
     generatedMealPlan = db.child("mealPlans").push(
       {
           "user": userId,
-          "timestamptCreated": timestamp_created, 
-          "timestamptLiked": "", 
-          "timestamptUnliked": "", 
+          "timestampCreated": timestamp_created, 
+          "timestampLiked": "", 
+          "timestampUnliked": "", 
           "isLiked": False, 
           "submissionFormId": submissionForm 
       }
@@ -475,9 +475,9 @@ def storeGeneratedMealPlan(userId, response, submissionForm):
         {
           "user": userId,
           "mealPlanId": mealPlanId,
-          "timestamptCreated": timestamp_created, 
-          "timestamptLiked": "", 
-          "timestamptUnliked": "", 
+          "timestampCreated": timestamp_created, 
+          "timestampLiked": "", 
+          "timestampUnliked": "", 
           "isLiked": False, 
           "mealType": mealType, 
           "mealName": mealInfo['mealName'],

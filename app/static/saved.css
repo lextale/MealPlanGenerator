@@ -462,3 +462,14 @@ button#like-meal-plan-btn {
 .meal-plan-container {
     margin-top: 10px;
 }
+
+.submission-form-info {
+    padding-top: 10px;
+    margin-bottom: 0px;
+    padding-bottom: 5px;
+    background-color: lightgrey;
+}
+.submission-form-info p {
+    padding-left: 20px;
+    margin-bottom: 0px;
+}
