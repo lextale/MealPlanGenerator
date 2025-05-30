@@ -112,10 +112,12 @@
               <p><strong>Diet Type:</strong> {{ mealPlanData.get('mealPlan').get('submissionFormId').get('diet_type', 'N/A') }}&nbsp;&nbsp;&nbsp;</p>
               <p><strong>Gender:</strong> {{ mealPlanData.get('mealPlan').get('submissionFormId').get('gender', 'N/A') }}&nbsp;&nbsp;&nbsp;</p>
               <p><strong>Age:</strong> {{ 'Any' if mealPlanData.get('mealPlan', {}).get('submissionFormId', {}).get('age', '').strip() == '' else mealPlanData.get('mealPlan', {}).get('submissionFormId', {}).get('age') }}</p>
-              <p><strong>Goals:</strong> {{ 'None' if mealPlanData.get('mealPlan', {}).get('submissionFormId', {}).get('goals', '') == [] else mealPlanData.get('mealPlan', {}).get('submissionFormId', {}).get('goals') }}</p>
-              <p><strong>Allergies:</strong> {{ 'None' if mealPlanData.get('mealPlan', {}).get('submissionFormId', {}).get('allergies', '') == [] else mealPlanData.get('mealPlan', {}).get('submissionFormId', {}).get('allergies') }}</p>
-              <p><strong>Intolerancies:</strong> {{ 'None' if mealPlanData.get('mealPlan', {}).get('submissionFormId', {}).get('intolerancies', '') == [] else mealPlanData.get('mealPlan', {}).get('submissionFormId', {}).get('intolerancies') }}</p>
-            
+              {% set submission = mealPlanData.get('mealPlan', {}).get('submissionFormId', {}) %}
+              <p><strong>Goals:</strong> {{ ', '.join(submission.get('goals')) if submission.get('goals') else 'None' }}</p>
+              <p><strong>Allergies:</strong> {{ ', '.join(submission.get('allergies')) if submission.get('allergies') else 'None' }}</p>
+              <p><strong>Intolerancies:</strong> {{ ', '.join(submission.get('intolerancies')) if submission.get('intolerancies') else 'None' }}</p>
+
+
           </div>
           <!-- Each meal plan's meals -->
           <div class="row">
