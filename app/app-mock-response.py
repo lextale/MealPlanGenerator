@@ -563,12 +563,21 @@ def saved():
     # Build dict mapping mealPlanId -> list of meals belonging to it (filtering from savedMeals)
     mealPlanMeals = {}
     for plan_id, plan_data in likedMealPlans.items():
-        # Filter meals in Python by mealPlanId == plan_id
-        filtered_meals = {meal_id: meal for meal_id, meal in savedMeals.items() if meal.get('mealPlanId') == plan_id}
-        mealPlanMeals[plan_id] = {
+      meal_type_order = {'breakfast': 0, 'lunch': 1, 'dinner': 2}
+
+      filtered_meals = {
+          meal_id: meal
+          for meal_id, meal in sorted(
+              savedMeals.items(),
+              key=lambda item: meal_type_order.get(item[1].get('mealType'), 99)
+          )
+          if meal.get('mealPlanId') == plan_id
+      }
+
+      mealPlanMeals[plan_id] = {
             "mealPlan": plan_data,
             "meals": filtered_meals
-        }
+      }
 
     # Collect available diet types from meals and meal plans
     availableDietTypes = set('All')

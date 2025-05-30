@@ -438,3 +438,29 @@ div#meal-plans-content {
   width: max-content;
   justify-self: center;
 }
+
+h4.card-title {
+    font-size: x-large;
+}
+
+h5.card-title {
+    font-size: medium;
+}
+
+button#like-meal-plan-btn {
+    padding: 0px 20px 20px 20px;
+}
+
+.meal-plan-like-bar {
+    display: flex;
+    align-items: baseline;
+    color: whitesmoke;
+    align-content: stretch;
+    /* flex-wrap: nowrap; */
+    flex-direction: row;
+    justify-content: flex-start;
+}
+
+.meal-plan-container {
+    margin-top: 10px;
+}

@@ -99,8 +99,11 @@
           <div class="meal-plan-bar">
             <div class="meal-plan-like-bar">
               <form class="like-meal-plan-form" data-meal-plan-id="{{ mealPlanId }}">
-                <button type="submit" class="like-meal-plan-btn" id="like-meal-plan-btn">🤍</button>
+                <button type="submit" class="like-meal-plan-btn" id="like-meal-plan-btn">❤️</button>
               </form>
+              <p><strong>Diet Type:</strong> {{ mealPlanData.get('mealPlan').get('submissionFormId').get('diet_type', 'N/A') }}&nbsp;&nbsp;&nbsp;</p>
+              <p><strong>Gender:</strong> {{ mealPlanData.get('mealPlan').get('submissionFormId').get('gender', 'N/A') }}&nbsp;&nbsp;&nbsp;</p>
+              <p><strong>Age:</strong> {{ mealPlanData.get('mealPlan').get('submissionFormId').get('age', 'N/A') }}&nbsp;&nbsp;&nbsp;</p>
             </div>
           </div>
 
@@ -112,9 +115,7 @@
                   <div class="card-body">
                     <h4 class="card-title"><b>{{ data.get('mealType', 'Meal').capitalize() }}</b></h4>
                     <h5 class="card-title"><b>{{ data.get('mealName', 'Unnamed Meal') }}</b></h5>
-                    <h6 class="card-subtitle mb-2 text-muted">
-                      Calories: {{ ('%.2f'|format(data.get('calories', 0)|float)).rstrip('0').rstrip('.') }} kcal
-                    </h6>
+                    <p><strong>Calories:</strong> {{ ('%.2f'|format(data.get('calories', 0)|float)).rstrip('0').rstrip('.') }} kcal</p>
                     <p class="card-text">
                       <strong>Ingredients:</strong><br>
                       <ul>
@@ -132,9 +133,11 @@
                     </p>
                   </div> <!-- .card-body -->
                   <div class="meal-like-bar-on-meal-plan">
+                     <!--
                       <form class="like-form" data-meal-id="{{ data.get('mealId', '') }}">
                         <button type="submit" class="like-meal-btn" id="like-meal-btn-meal-plan">🤍</button>
                       </form>
+                      -->
                   </div>
                 </div> <!-- .card-meal-plan -->
               </div> <!-- .col-md-4 -->
@@ -156,6 +159,35 @@
       // Implement fetch or form submission logic based on diet
       console.log("Filtering by diet:", diet);
     }
+    
+  document.querySelectorAll('.like-meal-plan-form').forEach(form => {
+      form.addEventListener('submit', function(e) {
+          e.preventDefault(); // Prevent the form from submitting normally
+          const mealPlanId = this.getAttribute('data-meal-plan-id');
+          const heartButton = this.querySelector('.like-meal-plan-btn'); // Get the button containing the heart emoji
+
+          fetch('/like_meal_plan', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/x-www-form-urlencoded',
+              },
+              body: 'mealPlanId=' + encodeURIComponent(mealPlanId)
+          })
+          .then(response => response.json())
+          .then(data => {
+              if (data.redirect) {
+                  window.location.href = data.redirect;
+              } else if (data.success) {
+                  heartButton.textContent = data.isLiked ? '❤️' : '🤍';
+              } else {
+                  alert('Error: ' + (data.message || 'Something went wrong'));
+              }
+          })
+          .catch(error => {
+              console.error('Error liking meal plan:', error);
+          });
+      });
+  });
   </script>
 </body>
 </html>
