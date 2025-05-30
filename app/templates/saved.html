@@ -8,20 +8,21 @@
   <script src="{{ url_for('static', filename='saved.js') }}"></script>
 </head>
 
+<nav class="navbar">
+  <div class="nav-left">
+    <a href="/" id="logo"><span class="logo">Nutrition Generator</span></a>
+  </div>
+  <div class="nav-right">
+    <a href="/" id="home">Home</a>
+    {% if 'user' in session %}
+    <a href="{{ url_for('profile') }}" id="profile">Profile</a>
+    <a href="{{ url_for('saved') }}" id="saved">Saved</a>
+    <a href="{{ url_for('logout') }}" id="logout">Log out</a>
+    {% endif %}
+  </div>
+</nav>
+
 <body>
-  <nav class="navbar">
-    <div class="nav-left">
-      <a href="/" id="logo"><span class="logo">Nutrition Generator</span></a>
-    </div>
-    <div class="nav-right">
-      <a href="/" id="home">Home</a>
-      {% if 'user' in session %}
-      <a href="{{ url_for('profile') }}" id="profile">Profile</a>
-      <a href="{{ url_for('saved') }}" id="saved">Saved</a>
-      <a href="{{ url_for('logout') }}" id="logout">Log out</a>
-      {% endif %}
-    </div>
-  </nav>
 
 {% if 'user' in session %}
 <div class="container">
@@ -103,7 +104,7 @@
               </form>
               <p><strong>Diet Type:</strong> {{ mealPlanData.get('mealPlan').get('submissionFormId').get('diet_type', 'N/A') }}&nbsp;&nbsp;&nbsp;</p>
               <p><strong>Gender:</strong> {{ mealPlanData.get('mealPlan').get('submissionFormId').get('gender', 'N/A') }}&nbsp;&nbsp;&nbsp;</p>
-              <p><strong>Age:</strong> {{ mealPlanData.get('mealPlan').get('submissionFormId').get('age', 'N/A') }}&nbsp;&nbsp;&nbsp;</p>
+              <p><strong>Age:</strong> {{ 'Any' if mealPlanData.get('mealPlan', {}).get('submissionFormId', {}).get('age', '').strip() == '' else mealPlanData.get('mealPlan', {}).get('submissionFormId', {}).get('age') }}&nbsp;&nbsp;&nbsp;</p>
             </div>
           </div>
 
