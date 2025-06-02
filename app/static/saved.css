@@ -473,3 +473,7 @@ button#like-meal-plan-btn {
     padding-left: 20px;
     margin-bottom: 0px;
 }
+
+.side-bar button {
+    width: 150px;
+}

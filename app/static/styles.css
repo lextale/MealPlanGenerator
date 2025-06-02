@@ -346,3 +346,11 @@ div#slide5 {
   margin-right: 0px;
   box-sizing: border-box;
 }
+
+.select2-container {
+    width: 100%;
+}
+
+.checkboxes-content {
+    margin: 10px 0px 10px 0px;
+}

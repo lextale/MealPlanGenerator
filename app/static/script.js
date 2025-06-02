@@ -70,7 +70,7 @@ document.addEventListener("DOMContentLoaded", () => {
 */
 document.addEventListener("DOMContentLoaded", function () {
   let currentSlide = 1;
-  const totalSlides = 5;
+  const totalSlides = 4;
 
   const backBtn = document.getElementById("back");
   const nextBtn = document.getElementById("next");

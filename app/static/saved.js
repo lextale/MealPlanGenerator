@@ -68,3 +68,33 @@ function filterData(type) {
     // Reload the page with the updated filter
     window.location.href = url.toString();
 }
+
+document.addEventListener('DOMContentLoaded', function () {
+    const mealPlans = document.querySelectorAll('.meal-plans-content');
+    const dietSet = new Set();
+
+    mealPlans.forEach(plan => {
+      const diet = plan.dataset.diet?.trim();
+      if (diet) {
+        dietSet.add(diet);
+      }
+    });
+
+    const dietFilter = document.getElementById('dietFilter');
+    Array.from(dietSet).sort().forEach(diet => {
+      const option = document.createElement('option');
+      option.value = diet;
+      option.textContent = diet;
+      dietFilter.appendChild(option);
+    });
+  });
+
+    document.getElementById('dietFilter').addEventListener('change', function () {
+    const selectedDiet = this.value.toLowerCase();
+    const mealPlans = document.querySelectorAll('.meal-plans-content');
+
+    mealPlans.forEach(plan => {
+      const planDiet = (plan.dataset.diet || '').toLowerCase();
+      plan.style.display = (selectedDiet === 'all' || planDiet === selectedDiet) ? 'block' : 'none';
+    });
+  });
