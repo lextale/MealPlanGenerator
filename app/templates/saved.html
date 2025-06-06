@@ -46,7 +46,7 @@
             <div class="inner-container">
               {% if savedMeals %}
                 {% for meal_id, meal in savedMeals.items() %}
-                  <div id="{{ meal_id }}">
+                  <div id="{{ meal_id }}"  data-diet="{{ meal.dietType }}">
                     <article class="feed-item">
                       <header>
                         <div class="meal-like-bar">
@@ -89,8 +89,9 @@
     </div> <!-- meals-content -->
 
     <!-- Meal Plans content -->
+    <div id="meal-plans-content">
     {% for mealPlanId, mealPlanData in mealPlanMeals.items() %}
-      <div id="meal-plans-content" data-diet={{ mealPlanData.get('mealPlan').get('submissionFormId').get('diet_type', 'N/A') }}>
+      <div id="{{ mealPlanId }}" data-diet="{{ mealPlanData.get('mealPlan').get('submissionFormId').get('diet_type', 'N/A') }}">
         <div class="meal-plan-container">
           <div class="meal-plan-bar">
             <div class="meal-plan-like-bar">
@@ -153,6 +154,7 @@
         </div> <!-- meal-plans-container -->
       </div> <!-- meal-plans-content -->
     {% endfor %}
+    </div>
 
   </div> <!-- main-section -->
 </div> <!-- container -->
