@@ -7,45 +7,135 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style-results.css') }}">
 </head>
+
+<nav class="navbar">
+  <div class="nav-left">
+    <a href="/" id="logo"><span class="logo">Nutrition Generator</span></a>
+  </div>
+  <div class="nav-right">
+    <a href="/" id="home">Home</a>
+    {% if 'user' not in session %}
+    <a href="{{ url_for('login') }}" id="login">Login</a>
+    <a href="{{ url_for('signup') }}" id="signup">Sign up</a>
+    {% endif %}
+    {% if 'user' in session %}
+    <a href="profile" id="profile">Profile</a>
+    <a href="{{ url_for('saved') }}" id="saved">Saved</a>
+    <a href="{{ url_for('logout') }}" id="logout">Log out</a>
+    {% endif %}
+  </div>
+</nav>
+
 <body>
 
 <div class="container my-5">
     <h1 class="text-center">Your Meal Plan</h1>
-    <div class="row">
-        <!-- Loop through each meal (breakfast, lunch, dinner) -->
-        {% for meal, data in results.items() %}
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title"><b>{{ data['mealName'] }}</b></h5>
-                    <h6 class="card-subtitle mb-2 text-muted">Calories: {{ ('%.2f'|format(data['calories']|float)).rstrip('0').rstrip('.') }} kcal</h6>
-                    <p class="card-text">
-                        <strong>Ingredients:</strong><br>
-                        <ul>
-                            {% for ingredient in data['ingredients'] %}
-                            <li>{{ ingredient }}</li>
-                            {% endfor %}
-                        </ul>
-                    </p>
-                    <p><strong>Preparation:</strong> {{ data['instructions'] }}</p>
-                    <p><strong>Cooking Time:</strong> {{ ('%.2f'|format(data['cookingTime']|float)).rstrip('0').rstrip('.') }} min</p>
-                    <p><strong>Macros:</strong><br>
-                        Protein: {{ ('%.2f'|format(data['macros']['protein']|float)).rstrip('0').rstrip('.') }} g<br>
-                        Carbs: {{ ('%.2f'|format(data['macros']['carbs']|float)).rstrip('0').rstrip('.') }} g<br>
-                        Fat: {{ ('%.2f'|format(data['macros']['fat']|float)).rstrip('0').rstrip('.') }} g
-                    </p>
-                </div>
+    <div class="meal-plan-container">
+        <div class="meal-plan-bar">
+            <div class="meal-plan-like-bar">
+                <form class="like-meal-plan-form" id='like-meal-plan-form' data-meal-plan-id="{{ mealPlanId }}">
+                <button type="submit" class="like-meal-plan-btn" id="like-meal-plan-btn">🤍</button>
+                </form>
             </div>
         </div>
-        {% endfor %}
+        <div class="row">
+            <!-- Loop through each meal (breakfast, lunch, dinner) -->
+            {% for meal, data in results.items() %}
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title"><b>{{ meal.capitalize() }}</b></h4>
+                        <h5 class="card-title"><b>{{ data['mealName'] }}</b></h5>
+                        <h6 class="card-subtitle mb-2 text-muted">Calories: {{ ('%.2f'|format(data['calories']|float)).rstrip('0').rstrip('.') }} kcal</h6>
+                        <p class="card-text">
+                            <strong>Ingredients:</strong><br>
+                            <ul>
+                                {% for ingredient in data['ingredients'] %}
+                                <li>{{ ingredient }}</li>
+                                {% endfor %}
+                            </ul>
+                        </p>
+                        <p><strong>Preparation:</strong> {{ data['instructions'] }}</p>
+                        <p><strong>Cooking Time:</strong> {{ ('%.2f'|format(data['cookingTime']|float)).rstrip('0').rstrip('.') }} min</p>
+                        <p><strong>Macros:</strong><br>
+                            Protein: {{ ('%.2f'|format(data['macros']['protein']|float)).rstrip('0').rstrip('.') }} g<br>
+                            Carbs: {{ ('%.2f'|format(data['macros']['carbs']|float)).rstrip('0').rstrip('.') }} g<br>
+                            Fat: {{ ('%.2f'|format(data['macros']['fat']|float)).rstrip('0').rstrip('.') }} g
+                        </p>
+                    </div>
+                    <div class="meal-like-bar">
+                        <form class="like-form" data-meal-id="{{ data['mealId'] }}">
+                        <button type="submit" class="like-meal-btn" id="like-meal-btn">🤍</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
     </div>
 </div> 
 <!-- <a href="/">Go back to the form</a> -->
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+document.querySelectorAll('.like-form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+        e.preventDefault(); // Prevent the form from submitting normally
+        const mealId = this.getAttribute('data-meal-id');
+        const heartButton = this.querySelector('.like-meal-btn'); // Get the button containing the heart emoji
 
+        fetch('/like_meal', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'mealId=' + encodeURIComponent(mealId)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.redirect) {
+                window.location.href = data.redirect;
+            } else if (data.success) {
+                heartButton.textContent = data.isLiked ? '❤️' : '🤍';
+            } else {
+                alert('Error: ' + (data.message || 'Something went wrong'));
+            }
+        })
+        .catch(error => {
+            console.error('Error liking meal:', error);
+        });
+    });
+});
+
+document.querySelectorAll('.like-meal-plan-form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+        e.preventDefault(); // Prevent the form from submitting normally
+        const mealPlanId = this.getAttribute('data-meal-plan-id');
+        const heartButton = this.querySelector('.like-meal-plan-btn'); // Get the button containing the heart emoji
+
+        fetch('/like_meal_plan', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'mealPlanId=' + encodeURIComponent(mealPlanId)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.redirect) {
+                window.location.href = data.redirect;
+            } else if (data.success) {
+                heartButton.textContent = data.isLiked ? '❤️' : '🤍';
+            } else {
+                alert('Error: ' + (data.message || 'Something went wrong'));
+            }
+        })
+        .catch(error => {
+            console.error('Error liking meal plan:', error);
+        });
+    });
+});
+</script>
 </body>
 </html>
-
-    

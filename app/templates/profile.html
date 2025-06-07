@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>User Profile</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='profile.css') }}">
+</head>
+
+<nav class="navbar">
+  <div class="nav-left">
+    <a href="/" id="logo"><span class="logo">Nutrition Generator</span></a>
+  </div>
+  <div class="nav-right">
+    <a href="/" id="home">Home</a>
+    {% if 'user' in session %}
+    <a href="{{ url_for('profile') }}" id="profile">Profile</a>
+    <a href="{{ url_for('saved') }}" id="saved">Saved</a>
+    <a href="{{ url_for('logout') }}" id="logout">Log out</a>
+    {% endif %}
+  </div>
+</nav>
+
+<body>
+  {% if 'user' in session %}
+  <div class="profile-container">
+    <h2>Welcome, {{ user.username }}</h2>
+
+    <div class="info">
+      <p><strong>Email:</strong> {{ user.email }}</p>
+      <p><strong>Gender:</strong> {{ user.gender or 'Not specified' }}</p>
+      <p><strong>Birthday:</strong> {{ user.birthday or 'Not specified' }}</p>
+    </div>
+
+    <div class="avatar-section">
+      <div class="section-title">Profile Picture</div>
+      <img class="avatar" src="{{ user.avatar_url or url_for('static', filename='default-avatar.jpg') }}" alt="User Avatar">
+      <form action="{{ url_for('upload_avatar') }}" method="POST" enctype="multipart/form-data">
+        <input type="file" name="avatar" accept="image/*" required>
+        <br>
+        <button type="submit">Upload Avatar</button>
+      </form>
+    </div>
+
+    <div class="change-password">
+      <div class="section-title">Change Password</div>
+      <form action="{{ url_for('change_password') }}" method="POST">
+        <button type="submit">Reset Password</button>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+</body>
+</html>

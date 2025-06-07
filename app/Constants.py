@@ -1,5 +1,5 @@
 class Constants:
-    GENDERS = ['Male', 'Female']    
+    GENDERS = ['Any', 'Male', 'Female']    
     ACTIVITY_LEVELS = ['Sedentary', 'Moderate', 'Highly active']
     HEALTH_GOALS = [
                 "Weight Loss",
