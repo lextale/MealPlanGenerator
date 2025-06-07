@@ -554,11 +554,27 @@ def saved():
 
     # Get all meals for user
     savedMeals = db.child("meals").order_by_child("user").equal_to(user['uid']).get().val() or {}
-    likedMeals = {meal_id: meal for meal_id, meal in savedMeals.items() if meal.get('isLiked')}
+    likedMeals = {
+        meal_id: meal
+            for meal_id, meal in sorted(
+                savedMeals.items(),
+                key=lambda item: item[1].get('timestampCreated', 0),
+                reverse=True
+            )
+            if meal.get('isLiked')
+    }
 
     # Get all meal plans for user
     savedMealPlans = db.child("mealPlans").order_by_child("user").equal_to(user['uid']).get().val() or {}
-    likedMealPlans = {mp_id: mp for mp_id, mp in savedMealPlans.items() if mp.get('isLiked')}
+    likedMealPlans = {
+        mp_id: mp
+        for mp_id, mp in sorted(
+                savedMealPlans.items(),
+                key=lambda item: item[1].get('timestampCreated', 0),
+                reverse=True
+            )
+            if mp.get('isLiked')
+    }
 
     # Build dict mapping mealPlanId -> list of meals belonging to it (filtering from savedMeals)
     mealPlanMeals = {}

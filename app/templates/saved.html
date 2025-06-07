@@ -197,16 +197,25 @@
           });
       });
   });
+  document.querySelectorAll('.timestampCreated').forEach(el => {
+    const unixTime = parseInt(el.dataset.time);
+    if (!isNaN(unixTime)) {
+      const date = new Date(unixTime * 1000);
+      const formatted = date.toLocaleString('en-GB', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+      });
+      el.querySelector('strong').textContent = formatted;
+    } else {
+      el.querySelector('strong').textContent = 'Invalid timestamp';
+    }
+  });
 
-    document.querySelectorAll('.timestampCreated').forEach(el => {
-      const unixTime = parseInt(el.dataset.time);
-      if (!isNaN(unixTime)) {
-        const localTime = new Date(unixTime * 1000).toLocaleString();
-        el.querySelector('strong').textContent = localTime;
-      } else {
-        el.querySelector('strong').textContent = 'Invalid timestamp';
-      }
-    });
   </script>
 </body>
 </html>
