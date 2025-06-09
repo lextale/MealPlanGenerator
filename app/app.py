@@ -4,8 +4,8 @@
 # @last modified on  : 11-03-2025
 # * Modifications Log 
 # * Ver   Date         Author                  Modification
-# * 1.0   11-03-2025   Αλεξάνδρα Παραμύθα    Initial Version
-#####################################################################
+# * 3.0   09-06-2025   Αλεξάνδρα Παραμύθα    Final Version
+####################################################################
 
 # Εισαγωγή απαραίτητων βιβλιοθηκών
 from flask import Flask, request, jsonify, render_template, redirect, url_for, flash, session
@@ -16,7 +16,7 @@ from pyngrok import ngrok
 from datetime import datetime
 import os
 from Constants import Constants
-from Basemodels import MealPlanFormat, MealBreakfast, MealLunch, MealDinner
+from Basemodels import MealPlanFormat, MealBreakfast, MealLunch, MealDinner, Meal
 import json
 import re
 from jsonformer import Jsonformer
@@ -35,8 +35,9 @@ from auto_gptq import AutoGPTQForCausalLM
 app = Flask(__name__)  # Αρχικοποίηση Flask εφαρμογής για τη διαχείριση HTTP requests  
 
 # Στοιχεία αυθεντικοποίησης για το Firebase
-app.secret_key = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+app.secret_key = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
 firebase_config = {}
+
 
 firebase = pyrebase.initialize_app(firebase_config)
 auth = firebase.auth()
@@ -44,13 +45,13 @@ db = firebase.database()
 
 def init_auth():
     # authtoken ngrok
-    ngrok_auth_token = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+    ngrok_auth_token = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
     
     # Θέτουμε το authtoken για ngrok
     os.system(f'ngrok authtoken {ngrok_auth_token}')
 
     # Σύνδεση με HuggingFace
-    hf_login('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+    hf_login('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
 
 
 # Εκτελείται πριν από κάθε αίτημα για να διασφαλίσει ότι τα templates φορτώνονται ξανά αυτόματα
@@ -106,27 +107,59 @@ def getSubmitForm():
         
 
         # Προσχέδιο προτροπής
-        prompt = f"""
-            You are a meal planner that provides to users a day meal plan in the form of json.
-            The user's gender is {gender} and is {age} years old.
-            The user follows {'a '+diet_type if diet_type else 'any'} diet and has the following goals: {goals if goals else 'None'}.
-            The user is allergic to {allergies if allergies else 'nothing'}.
-            The user is food intolerant to {intolerances if intolerances else 'nothing'}.
+        mealtype = ""
 
-            The meal names should be realistic, ingredients should be commonly available, cookingTime must correspond to the time needed \
-            for cooking the meal  and macros should be reasonable. Ensure the JSON output follows the expected structure exactly without extra text. \
-            You must put the information in the following json schema: """
+        prompt = f"""You are a meal planner that provides to users a {mealtype} meal in the form of json.\
+            The user\'s gender is {gender} and is {age} years old.\
+            The user follows {'a '+diet_type if diet_type else 'any'} diet and has the following goals: {goals if goals else 'None'}.\
+            The user is allergic to {allergies if allergies else 'nothing'}.\
+            The user is food intolerant to {intolerances if intolerances else 'nothing'}.\
 
+            The meal names should be realistic and descriptive, ingredients should be commonly available, cookingTime must correspond to the time needed \
+            for cooking the meal  and macros should be reasonable. Ensure the JSON output follows the expected structure exactly without extra text \
+            and that you provide a mealName like a meal title, the cooking time needed to prepare instructions, the meal calories and macros and \
+            all the ingredients mentioned in instructions. Please do not leave any part of the json empty. The output will be \
+            directly use to feed a flask json.
+            You must put the information in the following json schema: {Meal.schema_json()}\n"""
 
-        # Κλήση του Jsonformer για τη δημιουργία JSON δεδομένων σύμφωνα με το καθορισμένο σχήμα
-        breakfast = hf_pipeline(prompt, prefix_allowed_tokens_fn=build_transformers_prefix_allowed_tokens_fn(hf_pipeline.tokenizer, JsonSchemaParser(MealBreakfast.schema())))[0]['generated_text'][len(prompt):].replace("\n","")
-        lunch = hf_pipeline(prompt, prefix_allowed_tokens_fn=build_transformers_prefix_allowed_tokens_fn(hf_pipeline.tokenizer, JsonSchemaParser(MealLunch.schema())))[0]['generated_text'][len(prompt):].replace("\n","")
-        dinner = hf_pipeline(prompt, prefix_allowed_tokens_fn=build_transformers_prefix_allowed_tokens_fn(hf_pipeline.tokenizer, JsonSchemaParser(MealDinner.schema())))[0]['generated_text'][len(prompt):].replace("\n","")
+        # Create a character level parser and build a transformers prefix function from it
+        parser = JsonSchemaParser(Meal.schema())
+        prefix_function = build_transformers_prefix_allowed_tokens_fn(hf_pipeline.tokenizer, parser)
+
+        # Call the pipeline with the prefix function
+        count = 0
+        while(count<3):
+          try:
+            breakfast = json.loads(hf_pipeline(prompt, prefix_allowed_tokens_fn=prefix_function)[0]['generated_text'][len(prompt):].replace("\n",""))
+            break
+          except:
+            count += 1
+
+        count = 0
+        while(count<3):
+          try:
+            lunch = json.loads(hf_pipeline(prompt, prefix_allowed_tokens_fn=prefix_function)[0]['generated_text'][len(prompt):].replace("\n",""))
+            break
+          except:
+            count += 1
+
+        count = 0
+        while(count<3):
+          try:
+            dinner = json.loads(hf_pipeline(prompt, prefix_allowed_tokens_fn=prefix_function)[0]['generated_text'][len(prompt):].replace("\n",""))
+            break
+          except:
+            count += 1
+
+        # Extract the results
+        print(breakfast)
+        print(lunch)
+        print(dinner)
 
         response = {
-            "breakfast": json.loads(breakfast.replace("\n",""))['breakfast'],
-            "lunch": json.loads(lunch.replace("\n",""))['lunch'],
-            "dinner": json.loads(dinner.replace("\n",""))['dinner']
+            "breakfast": breakfast,
+            "lunch": lunch,
+            "dinner": dinner
         }
 
         # Εμφάνιση παραγόμενου αποτελέσματος
