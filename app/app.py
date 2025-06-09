@@ -16,6 +16,7 @@ from pyngrok import ngrok
 from datetime import datetime
 import os
 from Constants import Constants
+from Basemodels import MealPlanFormat, MealBreakfast, MealLunch, MealDinner
 import json
 import re
 from jsonformer import Jsonformer
@@ -24,11 +25,17 @@ import pyrebase
 from werkzeug.utils import secure_filename
 import requests
 import traceback
+from pydantic import BaseModel
+from lmformatenforcer import JsonSchemaParser
+from lmformatenforcer.integrations.transformers import build_transformers_prefix_allowed_tokens_fn
+from transformers import pipeline
+from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
+from auto_gptq import AutoGPTQForCausalLM
 
 app = Flask(__name__)  # Αρχικοποίηση Flask εφαρμογής για τη διαχείριση HTTP requests  
 
 # Στοιχεία αυθεντικοποίησης για το Firebase
-app.secret_key = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+app.secret_key = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
 firebase_config = {}
 
 firebase = pyrebase.initialize_app(firebase_config)
@@ -37,13 +44,13 @@ db = firebase.database()
 
 def init_auth():
     # authtoken ngrok
-    ngrok_auth_token = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+    ngrok_auth_token = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
     
     # Θέτουμε το authtoken για ngrok
     os.system(f'ngrok authtoken {ngrok_auth_token}')
 
     # Σύνδεση με HuggingFace
-    hf_login('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+    hf_login('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
 
 
 # Εκτελείται πριν από κάθε αίτημα για να διασφαλίσει ότι τα templates φορτώνονται ξανά αυτόματα
@@ -88,87 +95,14 @@ def getSubmitForm():
         goals = request.form.getlist("goals")
         allergies = request.form.getlist("allergies")
         intolerances = request.form.getlist("intolerances")
-        medications = None
 
         # Εμφάνιση Δεδομένων χρήστη - Επαλήθευση ορθής λήψης δεδομένων
         print('Data retrived from user\n');
         print('Gender: '+gender);
         print('diet_type: '+diet_type);
         print('goals: '+str(goals));
+        print('allergies: '+str(allergies));
         print('intolerances: '+str(intolerances));
-        print('intolerances: '+str(intolerances));
-
-        # Προκαθορισμένη JSON δομή απαντήσεων για τροφοδοσία του Jsonformer
-        json_schema = {
-            "title": "MealPlan",
-            "type": "object",
-            "properties": {
-                "breakfast": {
-                    "type": "object",
-                    "properties": {
-                        "mealName": {"type": "string"},
-                        "ingredients": {"type": "array", "items": {"type": "string"}},
-                        "instructions": {"type": "string",
-                                         "minLength": 200,
-                                         "maxLength": 300
-                                         },
-                        "cookingTime": {"type": "number"},
-                        "calories": {"type": "number"},
-                        "macros": {
-                            "type": "object",
-                            "properties": {
-                                "protein": {"type": "number"},
-                                "carbs": {"type": "number"},
-                                "fat": {"type": "number"},
-                            },
-                        },
-                    },
-                },
-                "lunch": {
-                    "type": "object",
-                    "properties": {
-                        "mealName": {"type": "string"},
-                        "ingredients": {"type": "array", "items": {"type": "string"}},
-                        "instructions": {"type": "string",
-                                         "minLength": 200,
-                                         "maxLength": 300
-                                         },
-                        "cookingTime": {"type": "number"},
-                        "calories": {"type": "number"},
-                        "macros": {
-                            "type": "object",
-                            "properties": {
-                                "protein": {"type": "number"},
-                                "carbs": {"type": "number"},
-                                "fat": {"type": "number"},
-                            },
-                        },
-                    },
-                },
-                "dinner": {
-                    "type": "object",
-                    "properties": {
-                        "mealName": {"type": "string"},
-                        "ingredients": {"type": "array", "items": {"type": "string"}},
-                        "instructions": {"type": "string",
-                                         "minLength": 200,
-                                         "maxLength": 300
-                                         },
-                        "cookingTime": {"type": "number"},
-                        "calories": {"type": "number"},
-                        "macros": {
-                            "type": "object",
-                            "properties": {
-                                "protein": {"type": "number"},
-                                "carbs": {"type": "number"},
-                                "fat": {"type": "number"},
-                            },
-                        },
-                    },
-                },
-            },
-        }
-
         
 
         # Προσχέδιο προτροπής
@@ -179,32 +113,21 @@ def getSubmitForm():
             The user is allergic to {allergies if allergies else 'nothing'}.
             The user is food intolerant to {intolerances if intolerances else 'nothing'}.
 
-            Please generate a JSON object following this structure:
-            - "breakfast": Contains details of the breakfast meal.
-              - "mealName": A descriptive name of the meal.
-              - "ingredients": A list of ingredients required.
-              - "instructions": Step-by-step instructions for preparation using minimum 150 characters
-              - "cookingTime": Time required to prepare the meal in minutes.
-              - "calories": Total calorie count for the meal.
-              - "macros": A breakdown of macronutrients.
-                - "protein": Amount of protein in grams.
-                - "carbs": Amount of carbohydrates in grams.
-                - "fat": Amount of fat in grams.
+            The meal names should be realistic, ingredients should be commonly available, cookingTime must correspond to the time needed \
+            for cooking the meal  and macros should be reasonable. Ensure the JSON output follows the expected structure exactly without extra text. \
+            You must put the information in the following json schema: """
 
-            - "lunch": Similar structure to breakfast.
-            - "dinner": Similar structure to breakfast.
-
-            The meal names should be realistic, ingredients should be commonly available, cookingTime must correspond to the time needed for cooking the meal  and macros should be reasonable. Ensure the JSON output follows the expected structure exactly without extra text."""
-
-
-        # Εμφάνιση προτροπής - Επαλήθευση κειμένου
-        print('Prompt used: '+prompt);
-
-        # Δημιουργία αντικειμένου Jsonformer για παραγωγή δομημένης JSON εξόδου από το γλωσσικό μοντέλο
-        jsonformer = Jsonformer(model, tokenizer, json_schema, prompt, max_string_token_length=3000)
 
         # Κλήση του Jsonformer για τη δημιουργία JSON δεδομένων σύμφωνα με το καθορισμένο σχήμα
-        response = jsonformer()
+        breakfast = hf_pipeline(prompt, prefix_allowed_tokens_fn=build_transformers_prefix_allowed_tokens_fn(hf_pipeline.tokenizer, JsonSchemaParser(MealBreakfast.schema())))[0]['generated_text'][len(prompt):].replace("\n","")
+        lunch = hf_pipeline(prompt, prefix_allowed_tokens_fn=build_transformers_prefix_allowed_tokens_fn(hf_pipeline.tokenizer, JsonSchemaParser(MealLunch.schema())))[0]['generated_text'][len(prompt):].replace("\n","")
+        dinner = hf_pipeline(prompt, prefix_allowed_tokens_fn=build_transformers_prefix_allowed_tokens_fn(hf_pipeline.tokenizer, JsonSchemaParser(MealDinner.schema())))[0]['generated_text'][len(prompt):].replace("\n","")
+
+        response = {
+            "breakfast": json.loads(breakfast.replace("\n",""))['breakfast'],
+            "lunch": json.loads(lunch.replace("\n",""))['lunch'],
+            "dinner": json.loads(dinner.replace("\n",""))['dinner']
+        }
 
         # Εμφάνιση παραγόμενου αποτελέσματος
         print(response)
@@ -581,31 +504,38 @@ if __name__ == '__main__':
 
     save_path = '/content/drive/MyDrive/Πτυχιακή Backup/Saved Models/Llama-2-7b-chat-hf'
     if os.path.exists(save_path):
-        # Load the model and tokenizer from local
         model = LlamaForCausalLM.from_pretrained(
             save_path,
             device_map="auto",
-            torch_dtype=torch.float16,
+            torch_dtype="auto",  # or torch.float16
             load_in_8bit=True,
         )
         tokenizer = LlamaTokenizer.from_pretrained(save_path)
     else:
-        # Load model from hugging face
         model_id = "meta-llama/Llama-2-7b-chat-hf"
         tokenizer = LlamaTokenizer.from_pretrained(model_id, use_fast=True)
         model = LlamaForCausalLM.from_pretrained(
             model_id,
             device_map="auto",
-            torch_dtype=torch.float16,
+            torch_dtype="auto",
             load_in_8bit=True
         )
-    os.makedirs(save_path, exist_ok=True)
-    model.save_pretrained(save_path)
-    tokenizer.save_pretrained(save_path)
+        os.makedirs(save_path, exist_ok=True)
+        model.save_pretrained(save_path)
+        tokenizer.save_pretrained(save_path)
 
-    # Ορισμός pad_token
+    # Set pad token if not already set
     if tokenizer.pad_token is None:
-      tokenizer.pad_token = tokenizer.eos_token
+        tokenizer.pad_token = tokenizer.eos_token
+
+    # Create the pipeline
+    hf_pipeline = pipeline(
+        "text-generation",
+        model=model,
+        tokenizer=tokenizer,
+        device_map="auto",
+        pad_token_id=tokenizer.pad_token_id  # avoids warning about missing pad_token
+    )
 
     # Συνδέουμε το ngrok στην τοπική θύρα 5000 και παίρνουμε το δημόσιο URL όπου θα είναι προσβάσιμη η εφαρμογή
     public_url = ngrok.connect(5000).public_url
