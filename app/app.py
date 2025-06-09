@@ -96,6 +96,7 @@ def getSubmitForm():
         goals = request.form.getlist("goals")
         allergies = request.form.getlist("allergies")
         intolerances = request.form.getlist("intolerances")
+        food_to_avoid = request.form.getlist("food_to_avoid")
 
         # Εμφάνιση Δεδομένων χρήστη - Επαλήθευση ορθής λήψης δεδομένων
         print('Data retrived from user\n');
@@ -104,6 +105,7 @@ def getSubmitForm():
         print('goals: '+str(goals));
         print('allergies: '+str(allergies));
         print('intolerances: '+str(intolerances));
+        print('food_to_avoid: '+str(food_to_avoid));
         
 
         # Προσχέδιο προτροπής
@@ -114,6 +116,7 @@ def getSubmitForm():
             The user follows {'a '+diet_type if diet_type else 'any'} diet and has the following goals: {goals if goals else 'None'}.\
             The user is allergic to {allergies if allergies else 'nothing'}.\
             The user is food intolerant to {intolerances if intolerances else 'nothing'}.\
+            {"You must not include any of the following ingredients: " + ", ".join(food_to_avoid) + "." if food_to_avoid else ""}\
 
             The meal names should be realistic and descriptive, ingredients should be commonly available, cookingTime must correspond to the time needed \
             for cooking the meal  and macros should be reasonable. Ensure the JSON output follows the expected structure exactly without extra text \
@@ -173,7 +176,8 @@ def getSubmitForm():
                             "diet_type": diet_type,
                             "goals": goals,
                             "allergies": allergies,
-                            "intolerances": intolerances}
+                            "intolerances": intolerances,
+                            "food_to_avoid": food_to_avoid}
             mealPlanId, response = storeGeneratedMealPlan(session['user']['uid'], response, submissionForm)
 
         print(response)

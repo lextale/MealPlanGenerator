@@ -112,6 +112,7 @@
               <p><strong>Goals:</strong> {{ ', '.join(submission.get('goals')) if submission.get('goals') else 'None' }}</p>
               <p><strong>Allergies:</strong> {{ ', '.join(submission.get('allergies')) if submission.get('allergies') else 'None' }}</p>
               <p><strong>Intolerances:</strong> {{ ', '.join(submission.get('intolerances')) if submission.get('intolerances') else 'None' }}</p>
+              <p><strong>Food to avoid:</strong> {{ ', '.join(submission.get('food_to_avoid')) if submission.get('food_to_avoid') else 'None' }}</p>
 
 
           </div>
