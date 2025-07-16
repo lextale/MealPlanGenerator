@@ -544,8 +544,7 @@ if __name__ == '__main__':
         model = LlamaForCausalLM.from_pretrained(
             save_path,
             device_map="auto",
-            torch_dtype="auto",  # or torch.float16
-            load_in_8bit=True,
+            torch_dtype="auto"
         )
         tokenizer = LlamaTokenizer.from_pretrained(save_path)
     else:
@@ -554,8 +553,7 @@ if __name__ == '__main__':
         model = LlamaForCausalLM.from_pretrained(
             model_id,
             device_map="auto",
-            torch_dtype="auto",
-            load_in_8bit=True
+            torch_dtype="auto"
         )
         os.makedirs(save_path, exist_ok=True)
         model.save_pretrained(save_path)
