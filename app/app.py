@@ -9,28 +9,24 @@
 
 # Εισαγωγή απαραίτητων βιβλιοθηκών
 from flask import Flask, request, jsonify, render_template, redirect, url_for, flash, session
-import torch
-from transformers import LlamaForCausalLM, LlamaTokenizer
+from transformers import LlamaForCausalLM, LlamaTokenizer, pipeline
 from huggingface_hub import login as hf_login
 from pyngrok import ngrok
-from datetime import datetime
+#from datetime import datetime
 import os
 from Constants import Constants
 from Basemodels import MealPlanFormat, MealBreakfast, MealLunch, MealDinner, Meal
 import json
-import re
-from jsonformer import Jsonformer
+#import re
 import time
 import pyrebase
 from werkzeug.utils import secure_filename
-import requests
+#import requests
 import traceback
-from pydantic import BaseModel
+#from pydantic import BaseModel
 from lmformatenforcer import JsonSchemaParser
 from lmformatenforcer.integrations.transformers import build_transformers_prefix_allowed_tokens_fn
-from transformers import pipeline
-from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
-from auto_gptq import AutoGPTQForCausalLM
+#from auto_gptq import AutoGPTQForCausalLM
 
 app = Flask(__name__)  # Αρχικοποίηση Flask εφαρμογής για τη διαχείριση HTTP requests  
 
