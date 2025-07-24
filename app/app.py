@@ -23,6 +23,8 @@ import pyrebase
 from werkzeug.utils import secure_filename
 #import requests
 import traceback
+import json
+import sys
 #from pydantic import BaseModel
 from lmformatenforcer import JsonSchemaParser
 from lmformatenforcer.integrations.transformers import build_transformers_prefix_allowed_tokens_fn
@@ -30,10 +32,44 @@ from lmformatenforcer.integrations.transformers import build_transformers_prefix
 
 app = Flask(__name__)  # Αρχικοποίηση Flask εφαρμογής για τη διαχείριση HTTP requests  
 
-# Στοιχεία αυθεντικοποίησης για το Firebase
-app.secret_key = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
-firebase_config = {}
+def argsHandle():
+    args = sys.argv[1:]  # Παράλειψε το όνομα του python αρχείου
+    args_len = len(args)
+    
+    argsDict = {
+        '--ngroktoken': '',
+        '--firebasetoken': '',
+        '--firebaseconfig': '',
+        '--hftoken': ''
+    }
+    expectedArgs = argsDict.keys()
 
+    for i in range(0, args_len-1, 2):
+        if args[i].startswith("--"):
+            key = args[i]
+            value = args[i + 1]
+            if key not in expectedArgs:
+                raise Exception(f'Unexpected Argument: {key}')
+            if value == '' or value == None:
+                raise Exception(f'Argument cannot be empty for {key}')
+            argsDict[key] = value
+        
+    missingArgs = []
+    for key, value in argsDict.items():
+        if value == '' or value == None:
+            missingArgs.append(key)
+    if len(missingArgs) > 0:
+        raise Exception(f"Missing arguements: {', '.join(missingArgs)}")
+    
+    return argsDict
+
+args = argsHandle()
+
+# Στοιχεία αυθεντικοποίησης για το Firebase
+app.secret_key = args['--firebasetoken']
+file = open(args['--firebaseconfig'], 'r')
+firebase_config = json.load(file)
+file.close()
 
 firebase = pyrebase.initialize_app(firebase_config)
 auth = firebase.auth()
@@ -41,13 +77,13 @@ db = firebase.database()
 
 def init_auth():
     # authtoken ngrok
-    ngrok_auth_token = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+    ngrok_auth_token = args['--ngroktoken']
     
     # Θέτουμε το authtoken για ngrok
     os.system(f'ngrok authtoken {ngrok_auth_token}')
 
     # Σύνδεση με HuggingFace
-    hf_login('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+    hf_login(args['--hftoken'])
 
 
 # Εκτελείται πριν από κάθε αίτημα για να διασφαλίσει ότι τα templates φορτώνονται ξανά αυτόματα
