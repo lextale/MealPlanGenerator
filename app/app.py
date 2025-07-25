@@ -42,7 +42,8 @@ def argsHandle():
         '--firebaseconfig': '',
         '--hftoken': ''
     }
-    expectedArgs = argsDict.keys()
+    expectedArgs = list(argsDict.keys())
+    expectedArgs.append('--modelpath')
 
     for i in range(0, args_len-1, 2):
         if args[i].startswith("--"):
@@ -50,13 +51,16 @@ def argsHandle():
             value = args[i + 1]
             if key not in expectedArgs:
                 raise Exception(f'Unexpected Argument: {key}')
-            if value == '' or value == None:
+            if ((value == '' or value == None) and key != '--modelpath'):
                 raise Exception(f'Argument cannot be empty for {key}')
             argsDict[key] = value
+    
+    #if argsDict['--modelpath'] == '' or argsDict['--modelpath'] == None:
+    #  argsDict['--modelpath'] = '/'
         
     missingArgs = []
     for key, value in argsDict.items():
-        if value == '' or value == None:
+        if ((value == '' or value == None) and key != '--modelpath'):
             missingArgs.append(key)
     if len(missingArgs) > 0:
         raise Exception(f"Missing arguements: {', '.join(missingArgs)}")
@@ -570,16 +574,36 @@ def forgot_password():
 
 if __name__ == '__main__':
     init_auth() # Αυθεντικοποίηση για την χρήση Ngrok και HuggingFace
+    
+    isModelPathSet = '--modelpath' in args.keys()
+    if isModelPathSet:
+      save_path = args['--modelpath']
 
-    save_path = '/content/drive/MyDrive/Πτυχιακή Backup/Saved Models/Llama-2-7b-chat-hf'
-    if os.path.exists(save_path):
-        model = LlamaForCausalLM.from_pretrained(
-            save_path,
-            device_map="auto",
-            torch_dtype="auto"
-        )
-        tokenizer = LlamaTokenizer.from_pretrained(save_path)
-    else:
+      # Όταν η διαδρομή είναι κενή επέλεξε την τρέχουσα τοποθεσία
+      if save_path == '' or save_path == None:
+        save_path = '.'
+
+
+    load_failed = False
+    if isModelPathSet:
+      if os.path.exists(save_path):   # Αν υπάρχει αυτό το path
+        try:
+
+          model = LlamaForCausalLM.from_pretrained(
+              save_path,
+              device_map="auto",
+              torch_dtype="auto"
+          )
+          tokenizer = LlamaTokenizer.from_pretrained(save_path)
+        except OSError as e:
+          print(e)
+          print('Model and tokenizer will be downloaded in /Llama-2-7b-chat-hf')
+          load_failed = True
+
+    if load_failed == True or isModelPathSet==False:   # Διαφορετικά κατέβασε το μοντέλο
+        print(f'isModelPathSet: {isModelPathSet}')
+        print(f'load_failed: {load_failed}')
+
         model_id = "meta-llama/Llama-2-7b-chat-hf"
         tokenizer = LlamaTokenizer.from_pretrained(model_id, use_fast=True)
         model = LlamaForCausalLM.from_pretrained(
@@ -587,6 +611,7 @@ if __name__ == '__main__':
             device_map="auto",
             torch_dtype="auto"
         )
+        save_path = '/Llama-2-7b-chat-hf'
         os.makedirs(save_path, exist_ok=True)
         model.save_pretrained(save_path)
         tokenizer.save_pretrained(save_path)
