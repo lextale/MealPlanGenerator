@@ -585,25 +585,29 @@ if __name__ == '__main__':
 
 
     load_failed = False
-    if isModelPathSet:
-      if os.path.exists(save_path):   # Αν υπάρχει αυτό το path
-        try:
 
-          model = LlamaForCausalLM.from_pretrained(
-              save_path,
-              device_map="auto",
-              torch_dtype="auto"
-          )
-          tokenizer = LlamaTokenizer.from_pretrained(save_path)
-        except OSError as e:
-          print(e)
+    # Αν έχει καθοριστεί path προσπάθησε να φορτώσεις το μοντέλο από εκεί
+    if isModelPathSet:
+        if os.path.exists(save_path):   # Αν υπάρχει αυτό το path
+            try:
+                model = LlamaForCausalLM.from_pretrained(
+                    save_path,
+                    device_map="auto",
+                    torch_dtype="auto"
+                )
+                tokenizer = LlamaTokenizer.from_pretrained(save_path)
+            except OSError as e: # Αν δεν υπάρχει το μοντέλο σε αυτόν τον φάκελο σημείωσε αποτυχία φόρτωσης
+                print(e)
+                print('Model and tokenizer will be downloaded in /Llama-2-7b-chat-hf')
+                load_failed = True
+        else: # Αν δεν υπάρχει το path σημείωσε αποτυχία φόρτωσης
+          print(f'Path {save_path} does not exist!')
           print('Model and tokenizer will be downloaded in /Llama-2-7b-chat-hf')
           load_failed = True
 
-    if load_failed == True or isModelPathSet==False:   # Διαφορετικά κατέβασε το μοντέλο
+    if load_failed == True or isModelPathSet==False:   # Αν δεν εχουμε ορίσει path ή η φόρτωση από το path απέτυχε κατέβασε το μοντέλο
         print(f'isModelPathSet: {isModelPathSet}')
         print(f'load_failed: {load_failed}')
-
         model_id = "meta-llama/Llama-2-7b-chat-hf"
         tokenizer = LlamaTokenizer.from_pretrained(model_id, use_fast=True)
         model = LlamaForCausalLM.from_pretrained(
