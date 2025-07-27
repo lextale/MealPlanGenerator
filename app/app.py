@@ -89,6 +89,63 @@ def init_auth():
     # Σύνδεση με HuggingFace
     hf_login(args['--hftoken'])
 
+def storeMealPlanMetrics(generation_start_time, generation_end_time, response, submissionForm):
+    UserId = ''
+    if 'user' in session:
+        userId = session['user']['uid']
+
+    metrics = {
+            "generation_start_time": generation_start_time,
+            "generation_end_time": generation_end_time,
+            "generation_time_ms": generation_end_time - generation_start_time,
+            "UserId": UserId, 
+            "ingredientsSet": [],
+            "excludedFood": [], 
+            "excludedFoodInIngredients": [],
+            "hasExcludedFoodInIngredients": ''
+        }
+
+    for dayMeal, contents in response.items():
+        ingredients = list(set(contents['ingredients']))
+        metrics['ingredientsSet'].extend(ingredients)
+        excludedFood = list(set(submissionForm['food_to_avoid']))
+        metrics['excludedFood'].extend(excludedFood)
+        metrics['excludedFoodInIngredients'] = [food for food in ingredients if food in excludedFood]
+        if len(metrics['excludedFoodInIngredients']) > 0:
+            metrics['hasExcludedFoodInIngredients'] = True
+        else:
+            metrics['hasExcludedFoodInIngredients'] = False
+
+    if metrics['ingredientsSet'] == []:
+        metrics['ingredientsSet'] = ''
+
+    if metrics['excludedFood'] == []:
+        metrics['excludedFood'] = ''
+
+    if metrics['excludedFoodInIngredients'] == []:
+        metrics['excludedFoodInIngredients'] = ''
+
+    if metrics['hasExcludedFoodInIngredients'] == []:
+        metrics['hasExcludedFoodInIngredients'] = ''
+
+    db.child("metrics").push(metrics)
+
+def debugLogMetrics(timestamp, error):
+    userId = ''
+    if 'user' in session:
+        userId = session['user']['uid']
+
+    db.child("debugLog").push(
+        {
+            'timestamp': timestamp,
+            'error': {
+                "type": type(error).__name__,
+                "message": str(error),
+                "traceback": traceback.format_exc()
+            },
+            'user': userId
+        }
+    )
 
 # Εκτελείται πριν από κάθε αίτημα για να διασφαλίσει ότι τα templates φορτώνονται ξανά αυτόματα
 # σε περίπτωση που θέλουμε να τροποιήσουμε αρχεία όπως html, css κτλ. χωρίς να 
@@ -164,7 +221,8 @@ def getSubmitForm():
         # Create a character level parser and build a transformers prefix function from it
         parser = JsonSchemaParser(Meal.schema())
         prefix_function = build_transformers_prefix_allowed_tokens_fn(hf_pipeline.tokenizer, parser)
-
+        
+        generation_start_time = int(time.time())
         # Call the pipeline with the prefix function
         count = 0
         while(count<3):
@@ -190,6 +248,9 @@ def getSubmitForm():
           except:
             count += 1
 
+        generation_end_time = int(time.time())
+
+
         # Extract the results
         print(breakfast)
         print(lunch)
@@ -201,20 +262,29 @@ def getSubmitForm():
             "dinner": dinner
         }
 
+
+
         # Εμφάνιση παραγόμενου αποτελέσματος
         print(response)
 
+        # Δεδομένα φόρμας υποβολής
+        submissionForm = {"gender": gender if gender is not None else '',
+                        "age": age if age is not None else '',
+                        "diet_type": diet_type if diet_type is not None else '',
+                        "goals": goals if len(goals) else '',
+                        "allergies": allergies if len(allergies) else '',
+                        "intolerances": intolerances if len(intolerances) else '',
+                        "food_to_avoid": food_to_avoid if len(food_to_avoid) else ''}
+        
+        print(submissionForm)
         # Αποθήκευση παραγόμενων γευμάτων σε περίπτωση συνδεδεμένου χρήστη
         if 'user' in session:
-            # Δεδομένα φόρμας υποβολής
-            submissionForm = {"gender": gender,
-                            "age": age,
-                            "diet_type": diet_type,
-                            "goals": goals,
-                            "allergies": allergies,
-                            "intolerances": intolerances,
-                            "food_to_avoid": food_to_avoid}
             mealPlanId, response = storeGeneratedMealPlan(session['user']['uid'], response, submissionForm)
+        else:
+            mealPlanId, response = storeGeneratedMealPlan('', response, submissionForm)
+        
+        storeMealPlanMetrics(generation_start_time, generation_end_time, response, submissionForm)
+
 
         print(response)
 
@@ -227,6 +297,7 @@ def getSubmitForm():
         print(e)
         print(str(response))
         traceback.print_exc()
+        debugLogMetrics(time.time(), e)
         return render_template("error.html", error={"error": str(e)})
 
 
@@ -257,6 +328,7 @@ def login():
 
         except Exception as e:
             error_msg = str(e)
+            debugLogMetrics(time.time(), e)
             if "INVALID_LOGIN_CREDENTIALS" in str(e):
                 flash("Wrong email or password!", "danger")
                 return render_template('login.html', email=email)
@@ -335,6 +407,7 @@ def change_password():
         flash("Check your email!", "success")
     except Exception as e:
         error_msg = str(e)
+        debugLogMetrics(time.time(), e)
         print(error_msg)
         flash(f"Password change failed: {error_msg}", "danger")
     
@@ -371,7 +444,7 @@ def storeGeneratedMealPlan(userId, response, submissionForm):
     # Αποθήκευση ημερήσιου πλάνου στη Βάση Δεδομένων
     generatedMealPlan = db.child("mealPlans").push(
       {
-          "user": userId,
+          "user": '',
           "timestampCreated": timestamp_created, 
           "timestampLiked": "", 
           "timestampUnliked": "", 
@@ -385,20 +458,20 @@ def storeGeneratedMealPlan(userId, response, submissionForm):
     for mealType, mealInfo in response.items():
       generatedMeal = db.child("meals").push(
         {
-          "user": userId,
+          "user": '',
           "mealPlanId": mealPlanId,
           "timestampCreated": timestamp_created, 
           "timestampLiked": "", 
           "timestampUnliked": "", 
           "isLiked": False, 
-          "mealType": mealType, 
-          "mealName": mealInfo['mealName'],
+          "mealType": mealType,
+          "mealName": mealInfo['mealName'] if mealInfo['mealName'] is not None else '',
           "dietType": submissionForm["diet_type"],
-          "ingredients": mealInfo['ingredients'], 
-          "preparation": mealInfo['instructions'], 
-          "cookingTime": mealInfo['cookingTime'], 
-          "calories": mealInfo['calories'], 
-          "macros": mealInfo['macros']
+          "ingredients": mealInfo['ingredients'] if len(mealInfo['ingredients']) else '', 
+          "preparation": mealInfo['instructions'] if mealInfo['instructions'] is not None else '', 
+          "cookingTime": mealInfo['cookingTime'] if mealInfo['cookingTime'] is not None else '', 
+          "calories": mealInfo['calories'] if mealInfo['calories'] is not None else '', 
+          "macros": {key: value if value is not None else '' for key, value in mealInfo['macros'].items()}
         }
       )
       mealIds.append(generatedMeal['name'])
@@ -406,6 +479,15 @@ def storeGeneratedMealPlan(userId, response, submissionForm):
         response[mealType]['mealId'] = mealId;
 
     return mealPlanId, response
+
+def areThereLikedMealsByMealPlanId(userId, mealPlanId):
+    meals = db.child("meals").get().val() or {}
+    liked_meals = [ mealId for mealId, meal in meals.items() if meal.get("mealPlanId") == mealPlanId and meal.get('isLiked')]
+
+    if len(liked_meals) > 0:
+        return True
+    else:
+        return False
 
 @app.route('/like_meal_plan', methods=['POST'])
 def like_meal_plan():
@@ -421,9 +503,14 @@ def like_meal_plan():
     if current_like:
         # If already liked, toggle to unlike
         db.child("mealPlans").child(mealPlanId).child("isLiked").set(False)
+        db.child("mealPlans").child(mealPlanId).child("timestampUnliked").set(int(time.time()))
+        if not(areThereLikedMealsByMealPlanId(userId, mealPlanId)):
+            db.child("mealPlans").child(mealPlanId).child("user").set("")
     else:
         # If not liked, toggle to like
         db.child("mealPlans").child(mealPlanId).child("isLiked").set(True)
+        db.child("mealPlans").child(mealPlanId).child("user").set(userId)
+        db.child("mealPlans").child(mealPlanId).child("timestampLiked").set(int(time.time()))
 
     flash("Meal saved!", "success")
 
@@ -440,15 +527,24 @@ def like_meal():
 
     userId = session['user']['uid']
     mealId = request.form['mealId']
+    mealPlanId = db.child("meals").child(mealId).child("mealPlanId").get().val()
 
     current_like = db.child("meals").child(mealId).child("isLiked").get().val()
 
     if current_like:
         # If already liked, toggle to unlike
         db.child("meals").child(mealId).child("isLiked").set(False)
+        db.child("meals").child(mealId).child("user").set("")
+        db.child("meals").child(mealId).child("timestampUnliked").set(int(time.time()))
+        if not(areThereLikedMealsByMealPlanId(userId, mealPlanId)):
+            db.child("mealPlans").child(mealPlanId).child("user").set("")
     else:
         # If not liked, toggle to like
         db.child("meals").child(mealId).child("isLiked").set(True)
+        db.child("meals").child(mealId).child("user").set(userId)
+        db.child("mealPlans").child(mealPlanId).child("user").set(userId)
+        db.child("meals").child(mealId).child("timestampLiked").set(int(time.time()))
+
 
     flash("Meal saved!", "success")
 
@@ -567,6 +663,7 @@ def forgot_password():
 
         except Exception as e:
             flash(f"Error: {str(e)}", "error")
+            debugLogMetrics(time.time(), e)
             return render_template('login.html', email=email)
 
     # GET request
