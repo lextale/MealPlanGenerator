@@ -1,0 +1,95 @@
+html {
+  scrollbar-width: none;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #f0f2f5;
+  display: block;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  text-align: -webkit-center;
+}
+
+a#logo {
+    text-decoration: none;
+    color: white;
+}
+
+.container {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.1);
+  width: 300px;
+  text-align: center;
+  margin: 10%;
+}
+
+input {
+  width: 100%;
+  padding: 0.7rem;
+  margin: 0.5rem 0;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+button {
+  width: 100%;
+  padding: 0.7rem;
+  background: darkseagreen;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+button:hover {
+  background: #45a049;
+}
+
+.flashes {
+  list-style: none;
+  padding: 0;
+}
+
+.flash.success { color: green; }
+.flash.danger { color: red; }
+.flash.warning { color: orange; }
+
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #222;
+  padding: 10px 20px;
+  color: white;
+  margin-bottom: 20px
+}
+
+.logo {
+  font-size: 1.5em;
+  font-weight: bold;
+}
+
+.nav-right a {
+  margin-left: 20px;
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.nav-right a:hover {
+  text-decoration: underline;
+  color: #f0c040;
+}
+
+* {
+  margin-top: 0px;
+  margin-left: 0px;
+  margin-right: 0px;
+  box-sizing: border-box;
+}

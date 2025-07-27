@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>User Profile</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='saved.css') }}">
+  <script src="{{ url_for('static', filename='saved.js') }}"></script>
+</head>
+
+<nav class="navbar">
+  <div class="nav-left">
+    <a href="/" id="logo"><span class="logo">Nutrition Generator</span></a>
+  </div>
+  <div class="nav-right">
+    <a href="/" id="home">Home</a>
+    {% if 'user' in session %}
+    <a href="{{ url_for('profile') }}" id="profile">Profile</a>
+    <a href="{{ url_for('saved') }}" id="saved">Saved</a>
+    <a href="{{ url_for('logout') }}" id="logout">Log out</a>
+    {% endif %}
+  </div>
+</nav>
+
+<body>
+
+{% if 'user' in session %}
+<div class="container">
+  <!-- Sidebar -->
+  <div class="side-bar">
+    <button type="button" id="show-meals-btn">Meals</button>
+    <button type="button" id="show-meal-plans-btn">Meal Plans</button>
+  </div>
+
+  <!-- Main content area -->
+  <div class="main-section">
+    <select id="dietFilter" class="filter-bar">
+      <option value="all">All</option>
+    </select>
+
+    <!-- Meals content -->
+    <div id="meals-content">
+      <div class="feed">
+        <div class="outer-container">
+          <div class="middle-container">
+            <div class="inner-container">
+              {% if savedMeals %}
+                {% for meal_id, meal in savedMeals.items() %}
+                  <div id="{{ meal_id }}"  data-diet="{{ meal.dietType }}">
+                    <article class="feed-item">
+                      <header>
+                        <div class="meal-like-bar">
+                          <form class="like-form" data-meal-id="{{ meal_id }}">
+                            <button type="submit" class="like-meal-btn" id="like-meal-btn">❤️</button>
+                          </form>
+                          <h2>{{ meal.mealName }}</h2>
+                        </div>
+                      </header>
+                      <div class="details">
+                        <p><strong>Calories:</strong> {{ meal.calories }}</p>
+                        <p><strong>Cooking Time:</strong> {{ meal.cookingTime }} minutes</p>
+                        <p><strong>Meal Type:</strong> {{ meal.mealType }}</p>
+                        <h4>Ingredients:</h4>
+                        <ul>
+                          {% for ingredient in meal.ingredients %}
+                            <li>{{ ingredient }}</li>
+                          {% endfor %}
+                        </ul>
+                        <h4>Macros:</h4>
+                        <ul>
+                          <li>Protein: {{ meal.macros.protein }}g</li>
+                          <li>Fat: {{ meal.macros.fat }}g</li>
+                          <li>Carbs: {{ meal.macros.carbs }}g</li>
+                        </ul>
+                        <h4>Preparation:</h4>
+                        <p>{{ meal.preparation }}</p>
+                      </div>
+                      <div class="feed-item-footer"></div>
+                    </article>
+                  </div>
+                {% endfor %}
+              {% else %}
+                <p>No meals saved.</p>
+              {% endif %}
+            </div> <!-- inner-container -->
+          </div> <!-- middle-container -->
+        </div> <!-- outer-container -->
+      </div> <!-- feed -->
+    </div> <!-- meals-content -->
+
+    <!-- Meal Plans content -->
+    <div id="meal-plans-content">
+    {% for mealPlanId, mealPlanData in mealPlanMeals.items() %}
+      <div id="{{ mealPlanId }}" data-diet="{{ mealPlanData.get('mealPlan').get('submissionFormId').get('diet_type', 'N/A') }}">
+        <div class="meal-plan-container">
+          <div class="meal-plan-bar">
+            <div class="meal-plan-like-bar">
+              <form class="like-meal-plan-form" data-meal-plan-id="{{ mealPlanId }}">
+                <button type="submit" class="like-meal-plan-btn" id="like-meal-plan-btn">❤️</button>
+              </form>
+              <p class="timestampCreated" data-time="{{ mealPlanData.get('mealPlan').get('timestampCreated') }}">
+                <strong></strong>
+              </p>
+            </div>
+          </div>
+          <div class="submission-form-info">
+            
+              <p><strong>Diet Type:</strong> {{ mealPlanData.get('mealPlan').get('submissionFormId').get('diet_type', 'N/A') }}&nbsp;&nbsp;&nbsp;</p>
+              <p><strong>Gender:</strong> {{ mealPlanData.get('mealPlan').get('submissionFormId').get('gender', 'N/A') }}&nbsp;&nbsp;&nbsp;</p>
+              <p><strong>Age:</strong> {{ 'Any' if mealPlanData.get('mealPlan', {}).get('submissionFormId', {}).get('age', '').strip() == '' else mealPlanData.get('mealPlan', {}).get('submissionFormId', {}).get('age') }}</p>
+              {% set submission = mealPlanData.get('mealPlan', {}).get('submissionFormId', {}) %}
+              <p><strong>Goals:</strong> {{ ', '.join(submission.get('goals')) if submission.get('goals') else 'None' }}</p>
+              <p><strong>Allergies:</strong> {{ ', '.join(submission.get('allergies')) if submission.get('allergies') else 'None' }}</p>
+              <p><strong>Intolerances:</strong> {{ ', '.join(submission.get('intolerances')) if submission.get('intolerances') else 'None' }}</p>
+              <p><strong>Food to avoid:</strong> {{ ', '.join(submission.get('food_to_avoid')) if submission.get('food_to_avoid') else 'None' }}</p>
+
+
+          </div>
+          <!-- Each meal plan's meals -->
+          <div class="row">
+            {% for mealId, data in mealPlanData.meals.items() %}
+              <div class="col-md-4">
+                <div class="card-meal-plan">
+                  <div class="card-body">
+                    <h4 class="card-title"><b>{{ data.get('mealType', 'Meal').capitalize() }}</b></h4>
+                    <h5 class="card-title"><b>{{ data.get('mealName', 'Unnamed Meal') }}</b></h5>
+                    <p><strong>Calories:</strong> {{ ('%.2f'|format(data.get('calories', 0)|float)).rstrip('0').rstrip('.') }} kcal</p>
+                    <p class="card-text">
+                      <strong>Ingredients:</strong><br>
+                      <ul>
+                        {% for ingredient in data.get('ingredients', []) %}
+                          <li>{{ ingredient }}</li>
+                        {% endfor %}
+                      </ul>
+                    </p>
+                    <p><strong>Preparation:</strong> {{ data.get('preparation', 'N/A') }}</p>
+                    <p><strong>Cooking Time:</strong> {{ ('%.2f'|format(data.get('cookingTime', 0)|float)).rstrip('0').rstrip('.') }} min</p>
+                    <p><strong>Macros:</strong><br>
+                      Protein: {{ ('%.2f'|format(data.get('macros', {}).get('protein', 0)|float)).rstrip('0').rstrip('.') }} g<br>
+                      Carbs: {{ ('%.2f'|format(data.get('macros', {}).get('carbs', 0)|float)).rstrip('0').rstrip('.') }} g<br>
+                      Fat: {{ ('%.2f'|format(data.get('macros', {}).get('fat', 0)|float)).rstrip('0').rstrip('.') }} g
+                    </p>
+                  </div> <!-- .card-body -->
+                  <div class="meal-like-bar-on-meal-plan">
+                     <!--
+                      <form class="like-form" data-meal-id="{{ data.get('mealId', '') }}">
+                        <button type="submit" class="like-meal-btn" id="like-meal-btn-meal-plan">🤍</button>
+                      </form>
+                      -->
+                  </div>
+                </div> <!-- .card-meal-plan -->
+              </div> <!-- .col-md-4 -->
+            {% endfor %}
+          </div> <!-- .row (meal plans) -->
+        </div> <!-- meal-plans-container -->
+      </div> <!-- meal-plans-content -->
+    {% endfor %}
+    </div>
+
+  </div> <!-- main-section -->
+</div> <!-- container -->
+{% endif %}
+
+
+
+
+  <script>
+    function filterByDiet(diet) {
+      // Implement fetch or form submission logic based on diet
+      console.log("Filtering by diet:", diet);
+    }
+    
+  document.querySelectorAll('.like-meal-plan-form').forEach(form => {
+      form.addEventListener('submit', function(e) {
+          e.preventDefault(); // Prevent the form from submitting normally
+          const mealPlanId = this.getAttribute('data-meal-plan-id');
+          const heartButton = this.querySelector('.like-meal-plan-btn'); // Get the button containing the heart emoji
+
+          fetch('/like_meal_plan', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/x-www-form-urlencoded',
+              },
+              body: 'mealPlanId=' + encodeURIComponent(mealPlanId)
+          })
+          .then(response => response.json())
+          .then(data => {
+              if (data.redirect) {
+                  window.location.href = data.redirect;
+              } else if (data.success) {
+                  heartButton.textContent = data.isLiked ? '❤️' : '🤍';
+              } else {
+                  alert('Error: ' + (data.message || 'Something went wrong'));
+              }
+          })
+          .catch(error => {
+              console.error('Error liking meal plan:', error);
+          });
+      });
+  });
+  document.querySelectorAll('.timestampCreated').forEach(el => {
+    const unixTime = parseInt(el.dataset.time);
+    if (!isNaN(unixTime)) {
+      const date = new Date(unixTime * 1000);
+      const formatted = date.toLocaleString('en-GB', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+      });
+      el.querySelector('strong').textContent = formatted;
+    } else {
+      el.querySelector('strong').textContent = 'Invalid timestamp';
+    }
+  });
+
+  </script>
+</body>
+</html>
