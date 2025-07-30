@@ -5,7 +5,7 @@ echo "Cloning repositories..."
 git clone https://github.com/noamgat/lm-format-enforcer.git
 
 echo "Moving lmformatenforcer into thesisRepo/app..."
-mv lm-format-enforcer/lmformatenforcer thesisRepo/app/
+mv lm-format-enforcer/lmformatenforcer ./app/
 
 echo "Cleaning up..."
 rm -rf lm-format-enforcer
