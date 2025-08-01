@@ -28,8 +28,14 @@
 
     <div class="info">
       <p><strong>Email:</strong> {{ user.email }}</p>
-      <p><strong>Gender:</strong> {{ user.gender or 'Not specified' }}</p>
-      <p><strong>Birthday:</strong> {{ user.birthday or 'Not specified' }}</p>
+      <p><strong>Gender:
+  <select id="gender" name="gender" required>
+    <option value="">-- Select Gender --</option>
+    <option value="male"   {% if gender_value == 'male' %}selected{% endif %}>Male</option>
+    <option value="female" {% if gender_value == 'female' %}selected{% endif %}>Female</option>
+    <option value="other"  {% if gender_value == 'other' %}selected{% endif %}>Other</option>
+  </select></p>
+      <p><strong>Birthday:</strong> <input style="width:30%" type="date" id="dob" name="dob" value="{{ user.birthday or 'Not specified' }}" required></p>
     </div>
 
     <div class="avatar-section">
