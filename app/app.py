@@ -356,7 +356,7 @@ def signup():
                 "email": email
             }
             uid = user['localId']
-            db.child("users").child(uid).set(data)
+            db.child("users").child(uid).set(data, user['idToken'])
 
             flash("Account created! Check your email to verify.", "success")
             return redirect(url_for('login'))
@@ -365,7 +365,10 @@ def signup():
           if "WEAK_PASSWORD" in str(e):
               flash("Password must be at least 6 characters.", "danger")
               return render_template('signup.html', username=username, email=email)
-          
+          else:
+              error_msg = str(e)
+              debugLogMetrics(time.time(), e)
+          print(e)
           flash(str(e), "danger")
 
     return render_template('signup.html')
