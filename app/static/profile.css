@@ -9,6 +9,7 @@ body {
     border-radius: 50%;
     object-fit: cover;
     margin-bottom: 20px;
+    margin-top: 15px;
     }
     .info {
     margin-bottom: 20px;
@@ -64,6 +65,15 @@ body {
       border-radius: 50%;
       object-fit: cover;
       border: 3px solid #ccc;
+    }
+    
+    .avatar-navbar {
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #ccc;
+      height: 40px;
+      width: 40px;
+      margin: 0px 0px 0px 10px;
     }
     
     input[type="file"] {
@@ -128,6 +138,15 @@ body {
       font-weight: bold;
     }
     
+    .nav-right {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-content: space-between;
+      justify-content: space-between;
+      align-items: center;
+    }
+
     .nav-right a {
       margin-left: 20px;
       color: white;
@@ -150,6 +169,10 @@ body {
     a#logo {
     text-decoration: none;
     color: white;
+    }
+
+    input[type="file"] {
+    margin-bottom: 5px;
     }
     
     button {

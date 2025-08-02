@@ -17,6 +17,7 @@
     <a href="{{ url_for('profile') }}" id="profile">Profile</a>
     <a href="{{ url_for('saved') }}" id="saved">Saved</a>
     <a href="{{ url_for('logout') }}" id="logout">Log out</a>
+    <img class="avatar-navbar" src="{{ user.avatar_url or url_for('static', filename='default-avatar.jpg') }}" alt="User Avatar">
     {% endif %}
   </div>
 </nav>
@@ -28,9 +29,20 @@
 
     <div class="info">
       <p><strong>Email:</strong> {{ user.email }}</p>
-      <p><strong>Gender:</strong> {{ user.gender or 'Not specified' }}</p>
-      <p><strong>Birthday:</strong> {{ user.birthday or 'Not specified' }}</p>
+      <p><strong>Gender:
+      <select id="gender" name="gender" required>
+        <option value="">-- Select Gender --</option>
+        <option value="male"   {% if gender_value == 'male' %}selected{% endif %}>Male</option>
+        <option value="female" {% if gender_value == 'female' %}selected{% endif %}>Female</option>
+        <option value="other"  {% if gender_value == 'other' %}selected{% endif %}>Other</option>
+      </select></p>
+      <p><strong>Birthday:</strong> <input style="width:30%" type="date" id="dob" name="dob" value="{{ user.birthday or 'Not specified' }}" required></p>
     </div>
+
+    
+    <form action="{{ url_for('save_profile_settings') }}" method="POST">
+      <button type="submit">Save Settings</button>
+    </form>    
 
     <div class="avatar-section">
       <div class="section-title">Profile Picture</div>
