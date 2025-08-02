@@ -29,6 +29,7 @@ import sys
 from lmformatenforcer import JsonSchemaParser
 from lmformatenforcer.integrations.transformers import build_transformers_prefix_allowed_tokens_fn
 #from auto_gptq import AutoGPTQForCausalLM
+import requests
 
 app = Flask(__name__)  # Αρχικοποίηση Flask εφαρμογής για τη διαχείριση HTTP requests  
 
@@ -522,6 +523,7 @@ def like_meal_plan():
     mealPlanId = request.form['mealPlanId']
 
     current_like = db.child("mealPlans").child(mealPlanId).child("isLiked").get().val()
+    relatedMeals = orderQuery("meals", "mealPlanId", mealPlanId, session['user']['id_token'])
 
     if current_like:
         # If already liked, toggle to unlike
@@ -529,11 +531,16 @@ def like_meal_plan():
         db.child("mealPlans").child(mealPlanId).child("timestampUnliked").set(int(time.time()))
         if not(areThereLikedMealsByMealPlanId(userId, mealPlanId)):
             db.child("mealPlans").child(mealPlanId).child("user").set("")
+        for mealId, meal in relatedMeals.items():
+            if not(meal['isLiked']):
+                db.child("meals").child(mealId).child("user").set("")
     else:
         # If not liked, toggle to like
         db.child("mealPlans").child(mealPlanId).child("isLiked").set(True)
         db.child("mealPlans").child(mealPlanId).child("user").set(userId)
         db.child("mealPlans").child(mealPlanId).child("timestampLiked").set(int(time.time()))
+        for mealId, meal in relatedMeals.items():
+            db.child("meals").child(mealId).child("user").set(userId)
 
     flash("Meal saved!", "success")
 
@@ -575,6 +582,22 @@ def like_meal():
 
     return jsonify({"success": True, "isLiked": current_like, "message": "Meal saved!"})
 
+def orderQuery(child, orderBy, equalTo, id_token):
+    FIREBASE_DB_URL = firebase_config['databaseURL']
+    user_uid = session['user']['uid']
+    id_token = id_token
+
+    url = f"{FIREBASE_DB_URL}/{child}.json"
+    params = {
+        "orderBy": json.dumps(orderBy),
+        "equalTo": json.dumps(equalTo),
+        "auth": json.dumps(id_token)
+    }
+
+    response = requests.get(url, params=params)
+    response.raise_for_status()
+    return response.json() or {}
+
 @app.route('/saved', methods=['GET'])
 def saved():
     if 'user' not in session:
@@ -584,7 +607,7 @@ def saved():
     user = session['user']
 
     # Get all meals for user
-    savedMeals = db.child("meals").order_by_child("user").equal_to(user['uid']).get().val() or {}
+    savedMeals = orderQuery("meals", "user", user['uid'], session['user']['id_token'])
     likedMeals = {
         meal_id: meal
             for meal_id, meal in sorted(
@@ -596,7 +619,7 @@ def saved():
     }
 
     # Get all meal plans for user
-    savedMealPlans = db.child("mealPlans").order_by_child("user").equal_to(user['uid']).get().val() or {}
+    savedMealPlans = orderQuery("mealPlans", "user", user['uid'], session['user']['id_token'])
     likedMealPlans = {
         mp_id: mp
         for mp_id, mp in sorted(
