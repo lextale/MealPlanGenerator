@@ -179,6 +179,23 @@ def index():
                             micronutrientFocus=Constants.MICRONUTRIENT_FOCUS,
                             cookingDifficulty=Constants.COOKING_DIFFICULTY)
 
+
+def buildPrompt(mealtype, gender, age, diet_type, allergies, intolerances, food_to_avoid, goals, previous_meals, json_schema):
+  return f"""You are a meal planner that provides to users a {mealtype} meal in the form of json.\
+            The user\'s gender is {gender} and their age is {age} years old.\
+            The user follows {'a '+diet_type if diet_type else 'any'} diet and has the following goals: {goals if goals else 'None'}.\
+            The user is allergic to {allergies if allergies else 'nothing'}.\
+            The user is food intolerant to {intolerances if intolerances else 'nothing'}.\
+            {"You must not include any of the following ingredients: " + ", ".join(food_to_avoid) + "." if food_to_avoid else ""}\
+            {"The meals must not be similar to " + ' or '.join(previous_meals) + '.' if previous_meals else ''}
+
+            The meal names should be realistic and descriptive, ingredients should be commonly available, cookingTime must correspond to the time needed \
+            for cooking the meal  and macros should be reasonable. Ensure the JSON output follows the expected structure exactly without extra text \
+            and that you provide a mealName like a meal title, the cooking time needed to prepare instructions, the meal calories and macros and \
+            all the ingredients mentioned in instructions. Please do not leave any part of the json empty. The output will be \
+            directly use to feed a json.
+            You must put the information in the following json schema: {json_schema}\n"""
+
 # Η getSubmitForm() εκτελείται όταν ο χρήστης υποβάλει τη φόρμα
 @app.route('/submit', methods=['POST'])
 def getSubmitForm():
@@ -204,52 +221,61 @@ def getSubmitForm():
 
         # Προσχέδιο προτροπής
         mealtype = ""
-
-        prompt = f"""You are a meal planner that provides to users a {mealtype} meal in the form of json.\
-            The user\'s gender is {gender} and is {age} years old.\
-            The user follows {'a '+diet_type if diet_type else 'any'} diet and has the following goals: {goals if goals else 'None'}.\
-            The user is allergic to {allergies if allergies else 'nothing'}.\
-            The user is food intolerant to {intolerances if intolerances else 'nothing'}.\
-            {"You must not include any of the following ingredients: " + ", ".join(food_to_avoid) + "." if food_to_avoid else ""}\
-
-            The meal names should be realistic and descriptive, ingredients should be commonly available, cookingTime must correspond to the time needed \
-            for cooking the meal  and macros should be reasonable. Ensure the JSON output follows the expected structure exactly without extra text \
-            and that you provide a mealName like a meal title, the cooking time needed to prepare instructions, the meal calories and macros and \
-            all the ingredients mentioned in instructions. Please do not leave any part of the json empty. The output will be \
-            directly use to feed a flask json.
-            You must put the information in the following json schema: {Meal.schema_json()}\n"""
+        previous_meals = []
 
         # Create a character level parser and build a transformers prefix function from it
         parser = JsonSchemaParser(Meal.schema())
         prefix_function = build_transformers_prefix_allowed_tokens_fn(hf_pipeline.tokenizer, parser)
         
         generation_start_time = int(time.time())
+
         # Call the pipeline with the prefix function
-        count = 0
-        while(count<3):
+        breakfast = None
+        lunch = None
+        dinner = None
+
+        timeOut = time.time() - generation_start_time
+
+        while(timeOut < 240 and breakfast == None):
           try:
+            mealtype = "breakfast"
+            previous_meals = []
+            prompt = buildPrompt(mealtype, gender, age, diet_type, allergies, intolerances, food_to_avoid, goals, previous_meals, Meal.schema_json())
             breakfast = json.loads(hf_pipeline(prompt, prefix_allowed_tokens_fn=prefix_function)[0]['generated_text'][len(prompt):].replace("\n",""))
             break
-          except:
-            count += 1
+          except Exception as e:
+            print("breakfast: "+str(e))
+            timeOut = time.time() - generation_start_time
+            print(f"timeOut: {timeOut}")
 
-        count = 0
-        while(count<3):
+        while(timeOut < 240 and lunch == None):
           try:
+            mealtype = "lunch"
+            # previous_meals = [breakfast['mealType']]
+            prompt = buildPrompt(mealtype, gender, age, diet_type, allergies, intolerances, food_to_avoid, goals, previous_meals, Meal.schema_json())
             lunch = json.loads(hf_pipeline(prompt, prefix_allowed_tokens_fn=prefix_function)[0]['generated_text'][len(prompt):].replace("\n",""))
             break
-          except:
-            count += 1
+          except Exception as e:
+            print("lunch: "+str(e))
+            timeOut = time.time() - generation_start_time
+            print(f"timeOut: {timeOut}")
 
-        count = 0
-        while(count<3):
+        while(timeOut < 240 and dinner == None):
           try:
+            mealtype = "dinner"
+            # previous_meals = [breakfast['mealType'], lunch['mealType']]
+            prompt = buildPrompt(mealtype, gender, age, diet_type, allergies, intolerances, food_to_avoid, goals, previous_meals, Meal.schema_json())
             dinner = json.loads(hf_pipeline(prompt, prefix_allowed_tokens_fn=prefix_function)[0]['generated_text'][len(prompt):].replace("\n",""))
             break
-          except:
-            count += 1
+          except Exception as e:
+            print("dinner: "+str(e))
+            timeOut = time.time() - generation_start_time
+            print(f"timeOut: {timeOut}")
 
         generation_end_time = int(time.time())
+
+        if timeOut >= 240:
+          return render_template("error.html", error={"error": "Request too to long to complete. Please try again!"})
 
 
         # Extract the results
