@@ -171,13 +171,10 @@ def add_header(response):
 def index():
      return render_template("index.html", 
                             genders=Constants.GENDERS, 
-                            activityLevels=Constants.ACTIVITY_LEVELS, 
                             healthGoals=Constants.HEALTH_GOALS, 
                             dietaryTypes=Constants.DIETARY_TYPES, 
                             foodAllergies=Constants.FOOD_ALLERGIES, 
-                            foodIntolerancies=Constants.FOOD_INTOLERANCHES, 
-                            micronutrientFocus=Constants.MICRONUTRIENT_FOCUS,
-                            cookingDifficulty=Constants.COOKING_DIFFICULTY)
+                            foodIntolerancies=Constants.FOOD_INTOLERANCHES)
 
 
 def buildPrompt(mealtype, gender, age, diet_type, allergies, intolerances, food_to_avoid, goals, previous_meals, json_schema):
@@ -217,79 +214,72 @@ def getSubmitForm():
         print('allergies: '+str(allergies));
         print('intolerances: '+str(intolerances));
         print('food_to_avoid: '+str(food_to_avoid));
+
         
 
-        # Προσχέδιο προτροπής
-        mealtype = ""
-        previous_meals = []
-
-        # Create a character level parser and build a transformers prefix function from it
-        parser = JsonSchemaParser(Meal.schema())
-        prefix_function = build_transformers_prefix_allowed_tokens_fn(hf_pipeline.tokenizer, parser)
+        parser = JsonSchemaParser(Meal.schema())    # Αντικείμενο parser
+        prefix_function = build_transformers_prefix_allowed_tokens_fn(hf_pipeline.tokenizer, parser)    # Συνάρτηση preffix
         
-        generation_start_time = int(time.time())
+        
 
-        # Call the pipeline with the prefix function
+        # Αρχικοποίηση βοηθητικών μεταβλητών
         breakfast = None
         lunch = None
         dinner = None
 
-        timeOut = time.time() - generation_start_time
+        generation_start_time = int(time.time())    # Στιγμή έναρξης της παραγωγής
+        timeOut = time.time() - generation_start_time    # Χρονικό όριο παραγωγής: Η παραγωγή πρέπει να ολοκληρωθεί εντός του χρονικού ορίου
 
+        # Για 
         while(timeOut < 240 and breakfast == None):
           try:
             mealtype = "breakfast"
-            previous_meals = []
+            # Δημιουργία προτροπής
             prompt = buildPrompt(mealtype, gender, age, diet_type, allergies, intolerances, food_to_avoid, goals, previous_meals, Meal.schema_json())
+            # Παραγωγή πρωινού γεύματος
             breakfast = json.loads(hf_pipeline(prompt, prefix_allowed_tokens_fn=prefix_function)[0]['generated_text'][len(prompt):].replace("\n",""))
             break
           except Exception as e:
-            print("breakfast: "+str(e))
+            # Σε περίπτωση μη ορθής σύνταξης της JSON εγείρεται μία εξαίρεσή από την προσπάθεια φόρτωσής της στην μεταβλητή του εκάστοτε γεύματος
+            # Αφαιρείται ο χρόνος που σπαταλήθηκε από το υπολοιπόμενο χρονικό όριο
             timeOut = time.time() - generation_start_time
-            print(f"timeOut: {timeOut}")
 
         while(timeOut < 240 and lunch == None):
           try:
             mealtype = "lunch"
-            # previous_meals = [breakfast['mealType']]
+            # Δημιουργία προτροπής
             prompt = buildPrompt(mealtype, gender, age, diet_type, allergies, intolerances, food_to_avoid, goals, previous_meals, Meal.schema_json())
+            # Παραγωγή μεσημεριανού γεύματος
             lunch = json.loads(hf_pipeline(prompt, prefix_allowed_tokens_fn=prefix_function)[0]['generated_text'][len(prompt):].replace("\n",""))
             break
           except Exception as e:
-            print("lunch: "+str(e))
             timeOut = time.time() - generation_start_time
-            print(f"timeOut: {timeOut}")
 
         while(timeOut < 240 and dinner == None):
           try:
             mealtype = "dinner"
-            # previous_meals = [breakfast['mealType'], lunch['mealType']]
+            # Δημιουργία προτροπής
             prompt = buildPrompt(mealtype, gender, age, diet_type, allergies, intolerances, food_to_avoid, goals, previous_meals, Meal.schema_json())
+            # Παραγωγή βραδινού γεύματος
             dinner = json.loads(hf_pipeline(prompt, prefix_allowed_tokens_fn=prefix_function)[0]['generated_text'][len(prompt):].replace("\n",""))
             break
           except Exception as e:
-            print("dinner: "+str(e))
             timeOut = time.time() - generation_start_time
-            print(f"timeOut: {timeOut}")
 
-        generation_end_time = int(time.time())
+        generation_end_time = int(time.time())    # Ώρα λήξης της παραγωγής γευμάτων
 
+        # Διαχείριση αδυναμίας παραγωγής γευμάτων
         if timeOut >= 240:
           return render_template("error.html", error={"error": "Request too to long to complete. Please try again!"})
 
-
-        # Extract the results
-        print(breakfast)
-        print(lunch)
-        print(dinner)
-
+        if (breakfast == None or lunch == None or dinner == None):
+          return render_template("error.html", error={"error": "Unable to complete request. Please try again!"})
+            
         response = {
             "breakfast": breakfast,
             "lunch": lunch,
             "dinner": dinner
         }
-
-
 
         # Εμφάνιση παραγόμενου αποτελέσματος
         print(response)
@@ -303,23 +293,23 @@ def getSubmitForm():
                         "intolerances": intolerances if len(intolerances) else '',
                         "food_to_avoid": food_to_avoid if len(food_to_avoid) else ''}
         
-        print(submissionForm)
-        # Αποθήκευση παραγόμενων γευμάτων σε περίπτωση συνδεδεμένου χρήστη
         if 'user' in session:
+            # Αποθήκευση παραγόμενων γευμάτων σε περίπτωση συνδεδεμένου χρήστη
             mealPlanId, response = storeGeneratedMealPlan(session['user']['uid'], response, submissionForm)
         else:
+            # Αποθήκευση παραγόμενων γευμάτων ανώνυμα σε περίπτωση επισκέπτη
             mealPlanId, response = storeGeneratedMealPlan('', response, submissionForm)
-        
+
+        # Αποθήκευση δεδομένων αξιολόγησης
         storeMealPlanMetrics(generation_start_time, generation_end_time, response, submissionForm)
 
-
-        print(response)
-
+        # Φόρτωση σελίδας αποτελεσμάτων
         if 'user' in session:
-          return render_template("results.html", results=response, mealPlanId=mealPlanId)
+            return render_template("results.html", results=response, mealPlanId=mealPlanId)
         else:
-          return render_template("results.html", results=response) #return render_template("results.html", response=jsonify({"response": response}))
+            return render_template("results.html", results=response)
 
+    # Διαχείριση εξαίρεσης
     except Exception as e:
         print(e)
         print(str(response))
