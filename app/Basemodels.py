@@ -15,20 +15,3 @@ class Meal(BaseModel):
     cookingTime: float
     calories: float
     macros: Macros
-
-
-class MealPlanFormat(BaseModel):
-    breakfast: Meal
-    lunch: Meal
-    dinner: Meal
-
-class MealBreakfast(BaseModel):
-    breakfast: Meal
-
-
-class MealLunch(BaseModel):
-    lunch: Meal
-
-
-class MealDinner(BaseModel):
-    dinner: Meal
