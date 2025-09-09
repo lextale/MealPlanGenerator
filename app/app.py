@@ -28,7 +28,7 @@ import requests
 
 app = Flask(__name__)  # Αρχικοποίηση Flask εφαρμογής για τη διαχείριση HTTP requests  
 
-# Συμάρτηση argsHandle: Λαμβάνει παραμέτρους από το τερματικό
+# Συνάρτηση argsHandle: Λαμβάνει παραμέτρους από το τερματικό
 def argsHandle():
     args = sys.argv[1:]  # Παράλειψε το όνομα του python αρχείου
     args_len = len(args)
