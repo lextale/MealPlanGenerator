@@ -81,7 +81,7 @@
 <script>
 document.querySelectorAll('.like-form').forEach(form => {
     form.addEventListener('submit', function(e) {
-        e.preventDefault(); // Prevent the form from submitting normally
+        e.preventDefault(); // Αναστολή της προεπιλεγμένης συμπεριφοράς της φόρμας
         const mealId = this.getAttribute('data-meal-id');
         const heartButton = this.querySelector('.like-meal-btn');
 
