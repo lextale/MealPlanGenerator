@@ -174,7 +174,7 @@ display: flex;
 }
 
 .side-bar {
-width: 200px;
+width: fit-content;
 background-color: #f0f0f0;
 height: inherit;
 }
@@ -476,4 +476,5 @@ button#like-meal-plan-btn {
 
 .side-bar button {
     width: 150px;
+
 }
