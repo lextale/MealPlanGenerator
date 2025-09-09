@@ -462,7 +462,7 @@ def change_password():
 
 @app.route('/save_profile_settings', methods=['POST'])
 def save_profile_settings():
-  return render_template('profile')
+  return render_template('profile.html')
 
 
 @app.route('/upload_avatar', methods=['POST'])
