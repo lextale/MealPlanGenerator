@@ -219,7 +219,7 @@ def getSubmitForm():
         mealtype = ""
         previous_meals = []
 
-        parser = JsonSchemaParser(Meal.schema()) ())    # Αντικείμενο parser
+        parser = JsonSchemaParser(Meal.schema())    # Αντικείμενο parser
         prefix_function = build_transformers_prefix_allowed_tokens_fn(hf_pipeline.tokenizer, parser)    # Συνάρτηση preffix
         
         generation_start_time = int(time.time())
