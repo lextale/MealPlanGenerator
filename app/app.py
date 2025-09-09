@@ -30,7 +30,7 @@ app = Flask(__name__)  # Αρχικοποίηση Flask εφαρμογής γι�
 
 # Συνάρτηση argsHandle: Λαμβάνει παραμέτρους από το τερματικό
 def argsHandle():
-    args = sys.argv[1:]  # Παράλειψε το όνομα του python αρχείου
+    args = sys.argv[1:]    # Παράληψη του ονόματος του python αρχείου
     args_len = len(args)
     
     argsDict = {
