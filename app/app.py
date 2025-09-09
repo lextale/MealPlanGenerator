@@ -465,7 +465,7 @@ def save_profile_settings():
     gender = request.form['gender']
     birthday = request.form['dob']
     
-    id_token = session['user']['idToken']
+    id_token = session['user']['id_token']
     # Αποθήκευση email και username στη βάση δεδομένων
     data = {
         "gender": gender,
