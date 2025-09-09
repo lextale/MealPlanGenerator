@@ -462,7 +462,21 @@ def change_password():
 
 @app.route('/save_profile_settings', methods=['POST'])
 def save_profile_settings():
-  return render_template('profile.html')
+    gender = request.form['gender']
+    birthday = request.form['dob']
+    
+    id_token = user['idToken']
+    # Αποθήκευση email και username στη βάση δεδομένων
+    data = {
+        "gender": gender,
+        "birthday": birthday
+    }
+
+    # Update the user info in Firebase
+    db.child("users").child(uid).update(data, id_token)
+    
+    user = session['user']
+    return render_template("profile.html", user=user)
 
 
 @app.route('/upload_avatar', methods=['POST'])
