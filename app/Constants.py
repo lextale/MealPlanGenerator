@@ -1,6 +1,6 @@
 class Constants:
-    GENDERS = ['Any', 'Male', 'Female']    
-    ACTIVITY_LEVELS = ['Sedentary', 'Moderate', 'Highly active']
+    GENDERS = ['Any', 'Male', 'Female']
+    
     HEALTH_GOALS = [
                 "Weight Loss",
                 "Weight Maintenance",
@@ -63,7 +63,8 @@ class Constants:
                 "Nightshades (e.g., tomatoes, peppers, eggplant)",
                 "Coconut"
             ]
-    FOOD_INTOLERANCHES = [
+    
+    FOOD_INTOLERANCES = [
             "Lactose",
             "Gluten",
             "Fructose",
@@ -78,45 +79,3 @@ class Constants:
             "Alcohol",
             "Spicy Foods"
         ]
-    MICRONUTRIENT_FOCUS = [
-            "Vitamin A",
-            "Vitamin B1 (Thiamine)",
-            "Vitamin B2 (Riboflavin)",
-            "Vitamin B3 (Niacin)",
-            "Vitamin B5 (Pantothenic Acid)",
-            "Vitamin B6",
-            "Vitamin B7 (Biotin)",
-            "Vitamin B9 (Folate/Folic Acid)",
-            "Vitamin B12",
-            "Vitamin C",
-            "Vitamin D",
-            "Vitamin E",
-            "Vitamin K",
-            "Calcium",
-            "Iron",
-            "Magnesium",
-            "Phosphorus",
-            "Potassium",
-            "Sodium",
-            "Zinc",
-            "Copper",
-            "Manganese",
-            "Selenium",
-            "Iodine",
-            "Choline",
-            "Fluoride",
-            "Chromium",
-            "Molybdenum",
-            "Omega-3 Fatty Acids",
-            "Omega-6 Fatty Acids",
-            "Antioxidants",
-            "Fiber"
-        ]
-    
-    COOKING_DIFFICULTY = ['Easy', 'Intermediate', 'Hard']
-    
-    DEFAULT_MEALS_PER_DAY = 3
-    
-    DEFAULT_COOKING_DIFFICULTY = 'Easy'
-    
-    DEFAULT_COOKING_DURATION = 30
