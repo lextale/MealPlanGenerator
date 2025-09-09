@@ -90,49 +90,70 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  document.addEventListener('DOMContentLoaded', function () {
+
+document.addEventListener('DOMContentLoaded', function () {
+
+    const dietFilter = document.getElementById('dietFilter');
     const showMealsBtn = document.getElementById('show-meals-btn');
     const showMealPlansBtn = document.getElementById('show-meal-plans-btn');
     const mealsContent = document.getElementById('meals-content');
-    const mealPlansContentList = document.querySelectorAll('.meal-plans-content');
+    const mealPlansContent = document.getElementById('meal-plans-content');
 
-    // Show meals, hide all meal plans
-    showMealsBtn.addEventListener('click', function () {
-      mealsContent.style.display = 'block';
-      mealPlansContentList.forEach(plan => plan.style.display = 'none');
-    });
+    // Function to get all diet elements from the visible section
+    function getVisibleDietElements() {
+      const visibleSection = mealsContent.style.display !== 'none' ? mealsContent : mealPlansContent;
+      return visibleSection.querySelectorAll('[data-diet]');
+    }
 
-    // Show all meal plans, hide meals
-    showMealPlansBtn.addEventListener('click', function () {
-      mealsContent.style.display = 'none';
-      mealPlansContentList.forEach(plan => plan.style.display = 'block');
-    });
+    // Populate diet filter options dynamically
+    function populateDietFilter() {
+      const elements = getVisibleDietElements();
+      const dietSet = new Set();
 
-    // Populate filter options
-    const dietFilter = document.getElementById('dietFilter');
-    const dietElements = document.querySelectorAll('[data-diet]');
-    const dietSet = new Set();
+      elements.forEach(el => {
+        const diet = el.dataset.diet?.trim();
+        if (diet) dietSet.add(diet);
+      });
 
-    dietElements.forEach(el => {
-      const diet = el.dataset.diet?.trim();
-      if (diet) dietSet.add(diet);
-    });
+      // Clear previous options and add "All"
+      dietFilter.innerHTML = '<option value="all">All</option>';
+      dietSet.forEach(diet => {
+        const option = document.createElement('option');
+        option.value = diet;
+        option.textContent = diet;
+        dietFilter.appendChild(option);
+      });
+    }
 
-    dietSet.forEach(diet => {
-      const option = document.createElement('option');
-      option.value = diet;
-      option.textContent = diet;
-      dietFilter.appendChild(option);
-    });
-
-    // Filter content based on selected diet
+    // Filter visible elements based on selected diet
     dietFilter.addEventListener('change', function () {
       const selectedDiet = this.value.toLowerCase();
+      const elements = getVisibleDietElements();
 
-      dietElements.forEach(el => {
+      elements.forEach(el => {
         const diet = (el.dataset.diet || '').toLowerCase();
-        el.style.display = (selectedDiet === 'all' || diet === selectedDiet) ? '' : 'none';
+        el.style.display = selectedDiet === 'all' || diet === selectedDiet ? '' : 'none';
       });
     });
-  });
 
+    // Show meals and update filter
+    showMealsBtn.addEventListener('click', () => {
+      mealsContent.style.display = 'block';
+      mealPlansContent.style.display = 'none';
+      populateDietFilter();
+      dietFilter.value = 'all';
+    });
+
+    // Show meal plans and update filter
+    showMealPlansBtn.addEventListener('click', () => {
+      mealsContent.style.display = 'none';
+      mealPlansContent.style.display = 'block';
+      populateDietFilter();
+      dietFilter.value = 'all';
+    });
+
+    // Initialize view: show meals by default
+    mealsContent.style.display = 'block';
+    mealPlansContent.style.display = 'none';
+    populateDietFilter();
+  });
