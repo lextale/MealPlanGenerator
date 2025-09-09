@@ -39,6 +39,37 @@
     });
   });
 
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.like-meal-plan-form').forEach(form => {
+      form.addEventListener('submit', function(e) {
+          e.preventDefault(); // Prevent the form from submitting normally
+          const mealPlanId = this.getAttribute('data-meal-plan-id');
+          const heartButton = this.querySelector('.like-meal-plan-btn'); // Get the button containing the heart emoji
+
+          fetch('/like_meal_plan', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/x-www-form-urlencoded',
+              },
+              body: 'mealPlanId=' + encodeURIComponent(mealPlanId)
+          })
+          .then(response => response.json())
+          .then(data => {
+              if (data.redirect) {
+                  window.location.href = data.redirect;
+              } else if (data.success) {
+                  heartButton.textContent = data.isLiked ? '❤️' : '🤍';
+              } else {
+                  alert('Error: ' + (data.message || 'Something went wrong'));
+              }
+          })
+          .catch(error => {
+              console.error('Error liking meal plan:', error);
+          });
+      });
+  });
+});
+
   document.addEventListener('DOMContentLoaded', function() {
     // Get buttons and content sections
     const showMealsBtn = document.getElementById('show-meals-btn');
@@ -104,3 +135,4 @@
       });
     });
   });
+
