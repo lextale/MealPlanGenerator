@@ -731,6 +731,7 @@ def saved():
         }
 
         # Αποθήκευση στο mealPlanMeals 
+        mealPlanMeals[plan_id] = {
             "mealPlan": plan_data,
             "meals": filtered_meals
         }
