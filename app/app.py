@@ -12,27 +12,23 @@ from flask import Flask, request, jsonify, render_template, redirect, url_for, f
 from transformers import LlamaForCausalLM, LlamaTokenizer, pipeline
 from huggingface_hub import login as hf_login
 from pyngrok import ngrok
-#from datetime import datetime
 import os
 from Constants import Constants
-from Basemodels import MealPlanFormat, MealBreakfast, MealLunch, MealDinner, Meal
+from Basemodels import Meal
 import json
-#import re
 import time
 import pyrebase
 from werkzeug.utils import secure_filename
-#import requests
 import traceback
 import json
 import sys
-#from pydantic import BaseModel
 from lmformatenforcer import JsonSchemaParser
 from lmformatenforcer.integrations.transformers import build_transformers_prefix_allowed_tokens_fn
-#from auto_gptq import AutoGPTQForCausalLM
 import requests
 
 app = Flask(__name__)  # Αρχικοποίηση Flask εφαρμογής για τη διαχείριση HTTP requests  
 
+# Συμάρτηση argsHandle: Λαμβάνει παραμέτρους από το τερματικό
 def argsHandle():
     args = sys.argv[1:]  # Παράλειψε το όνομα του python αρχείου
     args_len = len(args)
@@ -55,9 +51,6 @@ def argsHandle():
             if ((value == '' or value == None) and key != '--modelpath'):
                 raise Exception(f'Argument cannot be empty for {key}')
             argsDict[key] = value
-    
-    #if argsDict['--modelpath'] == '' or argsDict['--modelpath'] == None:
-    #  argsDict['--modelpath'] = '/'
         
     missingArgs = []
     for key, value in argsDict.items():
@@ -68,6 +61,7 @@ def argsHandle():
     
     return argsDict
 
+# Λήψη απαραίτητων παραμέτρων από το τερματικό
 args = argsHandle()
 
 # Στοιχεία αυθεντικοποίησης για το Firebase
@@ -75,11 +69,11 @@ app.secret_key = args['--firebasetoken']
 file = open(args['--firebaseconfig'], 'r')
 firebase_config = json.load(file)
 file.close()
-
 firebase = pyrebase.initialize_app(firebase_config)
 auth = firebase.auth()
 db = firebase.database()
 
+# Αυθεντικοποίηση κατά την έναρξη της εκτέλεσης
 def init_auth():
     # authtoken ngrok
     ngrok_auth_token = args['--ngroktoken']
@@ -90,6 +84,7 @@ def init_auth():
     # Σύνδεση με HuggingFace
     hf_login(args['--hftoken'])
 
+# Συνάρτηση storeMealPlanMetrics: Αποθηκεύει δεδομένα για την αξιολόγηση του μοντέλου
 def storeMealPlanMetrics(generation_start_time, generation_end_time, response, submissionForm):
     UserId = ''
     if 'user' in session:
@@ -129,8 +124,10 @@ def storeMealPlanMetrics(generation_start_time, generation_end_time, response, s
     if metrics['hasExcludedFoodInIngredients'] == []:
         metrics['hasExcludedFoodInIngredients'] = ''
 
+    # Αποθήκευση των δεδομένων αξιολόγησης στο έγγραφο "metrics" της βάσης δεδομένων
     db.child("metrics").push(metrics)
 
+# Συνάρτηση debugLogMetrics: Αποθηκέυει logs στη βάση δεδομένων από σφάλματα και εξαιρέσεις
 def debugLogMetrics(timestamp, error):
     userId = ''
     if 'user' in session:
@@ -179,7 +176,7 @@ def index():
                             micronutrientFocus=Constants.MICRONUTRIENT_FOCUS,
                             cookingDifficulty=Constants.COOKING_DIFFICULTY)
 
-
+# Συνάρτηση buildPrompt: Δημιουργεί την προτροπή για το μοντέλο
 def buildPrompt(mealtype, gender, age, diet_type, allergies, intolerances, food_to_avoid, goals, previous_meals, json_schema):
   return f"""You are a meal planner that provides to users a {mealtype} meal in the form of json.\
             The user\'s gender is {gender} and their age is {age} years old.\
@@ -196,7 +193,7 @@ def buildPrompt(mealtype, gender, age, diet_type, allergies, intolerances, food_
             directly use to feed a json.
             You must put the information in the following json schema: {json_schema}\n"""
 
-# Η getSubmitForm() εκτελείται όταν ο χρήστης υποβάλει τη φόρμα
+# Συνάρτηση getSubmitForm: Εκτελείται όταν ο χρήστης υποβάλει τη φόρμα
 @app.route('/submit', methods=['POST'])
 def getSubmitForm():
     try:
@@ -218,77 +215,81 @@ def getSubmitForm():
         print('intolerances: '+str(intolerances));
         print('food_to_avoid: '+str(food_to_avoid));
         
-
         # Προσχέδιο προτροπής
         mealtype = ""
         previous_meals = []
 
-        # Create a character level parser and build a transformers prefix function from it
-        parser = JsonSchemaParser(Meal.schema())
-        prefix_function = build_transformers_prefix_allowed_tokens_fn(hf_pipeline.tokenizer, parser)
+        parser = JsonSchemaParser(Meal.schema()) ())    # Αντικείμενο parser
+        prefix_function = build_transformers_prefix_allowed_tokens_fn(hf_pipeline.tokenizer, parser)    # Συνάρτηση preffix
         
         generation_start_time = int(time.time())
 
-        # Call the pipeline with the prefix function
+        # Αρχικοποίηση μεταβλητών για την αποθήκευση των γευμάτων
         breakfast = None
         lunch = None
         dinner = None
 
-        timeOut = time.time() - generation_start_time
+        generation_start_time = int(time.time())    # Στιγμή έναρξης της παραγωγής
+        timeOut = time.time() - generation_start_time    # Χρονικό όριο παραγωγής: Η παραγωγή πρέπει να ολοκληρωθεί εντός του χρονικού ορίου
 
+        # Κάθε γεύμα παράγεται ξεχωριστά εντός ενός χρονικού ορίου
+        
+        # Πρωινό
         while(timeOut < 240 and breakfast == None):
-          try:
+            try:
             mealtype = "breakfast"
-            previous_meals = []
+              
+            # Δημιουργία προτροπής
             prompt = buildPrompt(mealtype, gender, age, diet_type, allergies, intolerances, food_to_avoid, goals, previous_meals, Meal.schema_json())
+            # Παραγωγή πρωινού γεύματος
             breakfast = json.loads(hf_pipeline(prompt, prefix_allowed_tokens_fn=prefix_function)[0]['generated_text'][len(prompt):].replace("\n",""))
             break
-          except Exception as e:
-            print("breakfast: "+str(e))
+        except Exception as e:
+            # Σε περίπτωση μη ορθής σύνταξης της JSON εγείρεται μία εξαίρεσή από την προσπάθεια φόρτωσής της στην μεταβλητή του εκάστοτε γεύματος
+            # Αφαιρείται ο χρόνος που σπαταλήθηκε από το υπολειπόμενο χρονικό όριο
             timeOut = time.time() - generation_start_time
-            print(f"timeOut: {timeOut}")
 
+        # Μεσημεριανό
         while(timeOut < 240 and lunch == None):
-          try:
-            mealtype = "lunch"
-            # previous_meals = [breakfast['mealType']]
-            prompt = buildPrompt(mealtype, gender, age, diet_type, allergies, intolerances, food_to_avoid, goals, previous_meals, Meal.schema_json())
-            lunch = json.loads(hf_pipeline(prompt, prefix_allowed_tokens_fn=prefix_function)[0]['generated_text'][len(prompt):].replace("\n",""))
-            break
-          except Exception as e:
-            print("lunch: "+str(e))
-            timeOut = time.time() - generation_start_time
-            print(f"timeOut: {timeOut}")
+            try:
+                mealtype = "lunch"
+                # Δημιουργία προτροπής
+                prompt = buildPrompt(mealtype, gender, age, diet_type, allergies, intolerances, food_to_avoid, goals, previous_meals, Meal.schema_json())
+                # Παραγωγή μεσημεριανού γεύματος
+                lunch = json.loads(hf_pipeline(prompt, prefix_allowed_tokens_fn=prefix_function)[0]['generated_text'][len(prompt):].replace("\n",""))
+                break
+            except Exception as e:
+                timeOut = time.time() - generation_start_time
 
         while(timeOut < 240 and dinner == None):
-          try:
-            mealtype = "dinner"
-            # previous_meals = [breakfast['mealType'], lunch['mealType']]
-            prompt = buildPrompt(mealtype, gender, age, diet_type, allergies, intolerances, food_to_avoid, goals, previous_meals, Meal.schema_json())
-            dinner = json.loads(hf_pipeline(prompt, prefix_allowed_tokens_fn=prefix_function)[0]['generated_text'][len(prompt):].replace("\n",""))
-            break
-          except Exception as e:
-            print("dinner: "+str(e))
-            timeOut = time.time() - generation_start_time
-            print(f"timeOut: {timeOut}")
+            try:
+                mealtype = "dinner"
+              
+                # Δημιουργία προτροπής
+                prompt = buildPrompt(mealtype, gender, age, diet_type, allergies, intolerances, food_to_avoid, goals, previous_meals, Meal.schema_json())
+                
+                # Παραγωγή βραδινού γεύματος
+                dinner = json.loads(hf_pipeline(prompt, prefix_allowed_tokens_fn=prefix_function)[0]['generated_text'][len(prompt):].replace("\n",""))
+                break
+            except Exception as e:
+                timeOut = time.time() - generation_start_time
 
+        # Ώρα λήξης της παραγωγής γευμάτων
         generation_end_time = int(time.time())
 
+        # Διαχείριση αδυναμίας παραγωγής γευμάτων
         if timeOut >= 240:
           return render_template("error.html", error={"error": "Request too to long to complete. Please try again!"})
 
+        if (breakfast == None or lunch == None or dinner == None):
+          return render_template("error.html", error={"error": "Unable to complete request. Please try again!"})
 
-        # Extract the results
-        print(breakfast)
-        print(lunch)
-        print(dinner)
 
         response = {
             "breakfast": breakfast,
             "lunch": lunch,
             "dinner": dinner
         }
-
 
 
         # Εμφάνιση παραγόμενου αποτελέσματος
@@ -303,23 +304,23 @@ def getSubmitForm():
                         "intolerances": intolerances if len(intolerances) else '',
                         "food_to_avoid": food_to_avoid if len(food_to_avoid) else ''}
         
-        print(submissionForm)
-        # Αποθήκευση παραγόμενων γευμάτων σε περίπτωση συνδεδεμένου χρήστη
         if 'user' in session:
+            # Αποθήκευση παραγόμενων γευμάτων σε περίπτωση συνδεδεμένου χρήστη
             mealPlanId, response = storeGeneratedMealPlan(session['user']['uid'], response, submissionForm)
         else:
+            # Αποθήκευση παραγόμενων γευμάτων ανώνυμα σε περίπτωση συνδεδεμένου χρήστη
             mealPlanId, response = storeGeneratedMealPlan('', response, submissionForm)
-        
+
+        # Αποθήκευση δεδομένων αξιολόγησης
         storeMealPlanMetrics(generation_start_time, generation_end_time, response, submissionForm)
 
-
-        print(response)
-
+        # Φόρτωση σελίδας αποτελεσμάτων
         if 'user' in session:
           return render_template("results.html", results=response, mealPlanId=mealPlanId)
         else:
           return render_template("results.html", results=response) #return render_template("results.html", response=jsonify({"response": response}))
 
+    # Διαχείριση εξαίρεσης
     except Exception as e:
         print(e)
         print(str(response))
@@ -327,24 +328,30 @@ def getSubmitForm():
         debugLogMetrics(time.time(), e)
         return render_template("error.html", error={"error": str(e)})
 
-
+# Endpoint - Είσοδος χρήστη
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    # Τα αιτήματα POST εκτελούν την σύνδεση
     if request.method == 'POST':
+        # Λήψη δεδομένων από τη φόρμα σύνδεσης
         email = request.form['email']
         password = request.form['password']
 
         try:
+            # Αυθεντικοποίηση χρήστη με το Firebase
             user = auth.sign_in_with_email_and_password(email, password)
 
-            # Check if email is verified
+            # Ελέγχει εάν το email έχει επιβεβαιωθεί
             user_info = auth.get_account_info(user['idToken'])
             email_verified = user_info['users'][0]['emailVerified']
 
+            # Ανακατεύθυνση χωρίς την ολοκλήρωση της εισόδου
             if not email_verified:
                 flash("Please verify your email before logging in.", "warning")
                 return redirect(url_for('login'))
 
+            # Αποθήκευση των στοιχείων της αυθεντικοποίησης στο
+            # session της Flask
             session['user'] = {
                 "email": email,
                 "uid": user['localId'],
@@ -355,6 +362,7 @@ def login():
             flash("Logged in successfully!", "success")
             return redirect(url_for('index'))
 
+        # Διαχείριση εξαίρεσης π.χ. λάθος διαπιστευτήρια
         except Exception as e:
             error_msg = str(e)
             debugLogMetrics(time.time(), e)
@@ -365,31 +373,36 @@ def login():
             flash(error_msg, "danger")
             return render_template('login.html', email=email)
 
-
+    # Τα αιτήματα GET φορτώνουν την σελίδα
     return render_template('login.html')
 
+# Endpoint - Εγγραφή χρήστη
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
+    # Τα αιτήματα POST εκτελούν την εγγραφή
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
         username = request.form['username']
 
         try:
+            # Δημιουργία χρήστη με το Firebase
             user = auth.create_user_with_email_and_password(email, password)
             auth.send_email_verification(user['idToken'])
 
-            # Save additional info to the database
+            # Αποθήκευση email και username στη βάση δεδομένων
             data = {
                 "username": username,
                 "email": email
             }
-            uid = user['localId']
-            db.child("users").child(uid).set(data, user['idToken'])
+
+            uid = user['localId']    # Διαπιστευτήριο που επιτρέπει την εγγραφή στη βάση
+            db.child("users").child(uid).set(data, user['idToken'])    # Αποθήκευση νέου χρήστη στη βάση
 
             flash("Account created! Check your email to verify.", "success")
             return redirect(url_for('login'))
-
+            
+        # Διαχείριση εξαιρέσεων π.χ. ανίσχυρος κωδικός
         except Exception as e:
           if "WEAK_PASSWORD" in str(e):
               flash("Password must be at least 6 characters.", "danger")
@@ -399,9 +412,11 @@ def signup():
               debugLogMetrics(time.time(), e)
           print(e)
           flash(str(e), "danger")
-
+    
+    # Τα αιτήματα GET φορτώνουν την σελίδα
     return render_template('signup.html')
 
+# Endpoint - Αποσύνδεση χρήστη
 @app.route('/logout')
 def logout():
     session.pop('user', None)
@@ -409,6 +424,8 @@ def logout():
     flash("You’ve been logged out", "info")
     return redirect(url_for('login'))
 
+# Endpoint - Ρυθμίσεις προφίλ
+# Φορτώνει την σελίδα των ρυθμίσεων προφίλ
 @app.route('/profile')
 def profile():
     if 'user' not in session:
@@ -715,19 +732,25 @@ def saved():
         mealPlanMeals=mealPlanMeals
     )
 
+# Endpoint - Επαναφορά κωδικού
 @app.route('/forgot_password', methods=['GET', 'POST'])
 def forgot_password():
+    # Αίτημα GET για την φόρτωση της σελίδας σύνδεσης
     if request.method == 'GET':
       return render_template('forgot_password.html')
+
+    # Αίτημα POST για την επαναφορά του κωδικού πρόσβασης
     if request.method == 'POST':
+        # Λήψη του email από την φόρμα υποβολής
         email = request.form.get('email')
+
+        # Έλεγχος εγκυρότητας
         if not email:
             flash("Email is required", "error")
             return render_template('login.html', email=email)
 
         try:
-            # reset_link = auth.generate_password_reset_link(email)
-            #print(f"Send this reset link to the user: {reset_link}")
+            # Αποστολή email ανάκτησης μέσω Firebase
             auth.send_password_reset_email(email)
 
             flash("Password reset email sent! Check your inbox.", "success")
@@ -738,8 +761,10 @@ def forgot_password():
             debugLogMetrics(time.time(), e)
             return render_template('login.html', email=email)
 
-    # GET request
+    # Φόρτωση της σελίδας σύνδεσης
     return render_template('login.html')
+
+
 
 if __name__ == '__main__':
     init_auth() # Αυθεντικοποίηση για την χρήση Ngrok και HuggingFace
@@ -789,11 +814,10 @@ if __name__ == '__main__':
         model.save_pretrained(save_path)
         tokenizer.save_pretrained(save_path)
 
-    # Set pad token if not already set
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
-    # Create the pipeline
+    # Δημιουργία pipeline
     hf_pipeline = pipeline(
         "text-generation",
         model=model,
