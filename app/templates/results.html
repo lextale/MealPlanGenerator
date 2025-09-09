@@ -83,7 +83,7 @@ document.querySelectorAll('.like-form').forEach(form => {
     form.addEventListener('submit', function(e) {
         e.preventDefault(); // Prevent the form from submitting normally
         const mealId = this.getAttribute('data-meal-id');
-        const heartButton = this.querySelector('.like-meal-btn'); // Get the button containing the heart emoji
+        const heartButton = this.querySelector('.like-meal-btn');
 
         fetch('/like_meal', {
             method: 'POST',
@@ -110,10 +110,10 @@ document.querySelectorAll('.like-form').forEach(form => {
 
 document.querySelectorAll('.like-meal-plan-form').forEach(form => {
     form.addEventListener('submit', function(e) {
-        e.preventDefault(); // Prevent the form from submitting normally
+        e.preventDefault();
         const mealPlanId = this.getAttribute('data-meal-plan-id');
-        const heartButton = this.querySelector('.like-meal-plan-btn'); // Get the button containing the heart emoji
-
+        const heartButton = this.querySelector('.like-meal-plan-btn');
+        
         fetch('/like_meal_plan', {
             method: 'POST',
             headers: {
