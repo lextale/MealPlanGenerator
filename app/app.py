@@ -471,7 +471,8 @@ def save_profile_settings():
         "gender": gender,
         "birthday": birthday
     }
-
+    
+    uid = session['user']['uid']
     # Update the user info in Firebase
     db.child("users").child(uid).update(data, id_token)
     
