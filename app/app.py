@@ -356,6 +356,21 @@ def login():
                 "username": db.child("users").child(user['localId']).child("username").get(user['idToken']).val(),
                 "avatar_url": db.child("users").child(user['localId']).child("avatar_url").get(user['idToken']).val()
             }
+
+            uid = session['user']['uid']
+            id_token = session['user']['id_token']
+
+            # Λήψη δεδομένων χρήστη από τη βάση δεδομένων
+            user_data = db.child("users").child(uid).get(id_token).val()
+            
+            if user_data:
+                gender = user_data.get("gender", None)
+                birthday = user_data.get("birthday", None)
+                session['user'].update({
+                  'gender': gender,
+                  'birthday': birthday
+                })
+                
             flash("Logged in successfully!", "success")
             return redirect(url_for('index'))
 
@@ -475,6 +490,11 @@ def save_profile_settings():
     uid = session['user']['uid']
     # Update the user info in Firebase
     db.child("users").child(uid).update(data, id_token)
+
+    session['user'].update({
+        'gender': gender,
+        'birthday': birthday
+    })
     
     user = session['user']
     return render_template("profile.html", user=user)
