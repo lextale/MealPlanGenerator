@@ -556,74 +556,109 @@ def areThereLikedMealsByMealPlanId(userId, mealPlanId):
     else:
         return False
 
+# Endpoint - Αποθήκευση προγράμματος διατροφής
 @app.route('/like_meal_plan', methods=['POST'])
 def like_meal_plan():
-    if 'user' not in session:
-        flash("Please log in to like meal plans.", "error")
-        return jsonify({"success": False, "redirect": url_for('login'), "message": "Please log in."})
+    try:
+        # Για τους επισκέπτες γίνεται ανακατεύθυνση στην σελίδα εισόδου
+        if 'user' not in session:
+            flash("Please log in to like meal plans.", "error")
+            return jsonify({"success": False, "redirect": url_for('login'), "message": "Please log in."})
+    
+        userId = session['user']['uid']
+        mealPlanId = request.form['mealPlanId']    # Id του προγράμματος διατροφής
 
-    userId = session['user']['uid']
-    mealPlanId = request.form['mealPlanId']
+        # current_like: Ελέγχει στην βάση αν είναι ήδη αποθηκευμένο
+        current_like = db.child("mealPlans").child(mealPlanId).child("isLiked").get().val()
 
-    current_like = db.child("mealPlans").child(mealPlanId).child("isLiked").get().val()
-    relatedMeals = orderQuery("meals", "mealPlanId", mealPlanId, session['user']['id_token'])
+        # relatedMeals: Λήψη όλων των γευμάτων που υπάγονται στο πρόγραμμα διατροφής
+        relatedMeals = orderQuery("meals", "mealPlanId", mealPlanId, session['user']['id_token'])
 
-    if current_like:
-        # If already liked, toggle to unlike
-        db.child("mealPlans").child(mealPlanId).child("isLiked").set(False)
-        db.child("mealPlans").child(mealPlanId).child("timestampUnliked").set(int(time.time()))
-        if not(areThereLikedMealsByMealPlanId(userId, mealPlanId)):
-            db.child("mealPlans").child(mealPlanId).child("user").set("")
-        for mealId, meal in relatedMeals.items():
-            if not(meal['isLiked']):
-                db.child("meals").child(mealId).child("user").set("")
-    else:
-        # If not liked, toggle to like
-        db.child("mealPlans").child(mealPlanId).child("isLiked").set(True)
-        db.child("mealPlans").child(mealPlanId).child("user").set(userId)
-        db.child("mealPlans").child(mealPlanId).child("timestampLiked").set(int(time.time()))
-        for mealId, meal in relatedMeals.items():
-            db.child("meals").child(mealId).child("user").set(userId)
+        # Για την αφαίρεση από τα αγαπημένα
+        if current_like:
+            # Αναστροφή της λογικής τιμής isLiked του προγράμματος διατροφής
+            db.child("mealPlans").child(mealPlanId).child("isLiked").set(False)
 
-    flash("Meal saved!", "success")
+            # Ανωνυμοποίηση του προγράμματος διατροφής χωρίς αποθηκευμένα γεύματα
+            if not(areThereLikedMealsByMealPlanId(userId, mealPlanId)):
+                db.child("mealPlans").child(mealPlanId).child("user").set("")
+                
+            # Ανωνυμοποίηση των υπαγόμενων γευμάτων
+            for mealId, meal in relatedMeals.items():
+                if not(meal['isLiked']):
+                    db.child("meals").child(mealId).child("user").set("")
+        else:
+            # Για την αποθήκευση
+            # Αναστροφή της λογικής τιμής isLiked του προγράμματος διατροφής
+            db.child("mealPlans").child(mealPlanId).child("isLiked").set(True)
 
-    current_like = db.child("mealPlans").child(mealPlanId).child("isLiked").get().val()
+            # Συσχέτιση του χρήστη με το πρόγραμμα διατροφής
+            db.child("mealPlans").child(mealPlanId).child("user").set(userId)
 
-    return jsonify({"success": True, "isLiked": current_like, "message": "Meal saved!"})
+            # Συσχέτιση του χρήστη με τα υπαγόμενα γεύματα
+            for mealId, meal in relatedMeals.items():
+                db.child("meals").child(mealId).child("user").set(userId)
+    
+        flash("Meal saved!", "success")
+    
+        current_like = db.child("mealPlans").child(mealPlanId).child("isLiked").get().val()
+    
+        return jsonify({"success": True, "isLiked": current_like, "message": "Meal saved!"})
+    # Διαχείριση εξαίρεσης
+    except Exception as e:
+        flash(f"Error: {str(e)}", "error")
+        debugLogMetrics(time.time(), e)
 
 
+# Endpoint - Αποθήκευση γεύματος
 @app.route('/like_meal', methods=['POST'])
 def like_meal():
-    if 'user' not in session:
-        flash("Please log in to like meals.", "error")
-        return jsonify({"success": False, "redirect": url_for('login'), "message": "Please log in."})
+    try:
+        #  Για τους επισκέπτες γίνεται ανακατεύθυνση στην σελίδα εισόδου
+        if 'user' not in session:
+            flash("Please log in to like meals.", "error")
+            return jsonify({"success": False, "redirect": url_for('login'), "message": "Please log in."})
+    
+        userId = session['user']['uid']
+        mealId = request.form['mealId']
+        mealPlanId = db.child("meals").child(mealId).child("mealPlanId").get().val()
+    
+        current_like = db.child("meals").child(mealId).child("isLiked").get().val()
 
-    userId = session['user']['uid']
-    mealId = request.form['mealId']
-    mealPlanId = db.child("meals").child(mealId).child("mealPlanId").get().val()
+        # Για την αφαίρεση από τα αγαπημένα
+        if current_like:
+            # Αναστροφή της λογικής τιμής isLiked του γεύματος
+            db.child("meals").child(mealId).child("isLiked").set(False)
 
-    current_like = db.child("meals").child(mealId).child("isLiked").get().val()
+            # Ανωνυμοποίηση του γεύματος
+            db.child("meals").child(mealId).child("user").set("")
 
-    if current_like:
-        # If already liked, toggle to unlike
-        db.child("meals").child(mealId).child("isLiked").set(False)
-        db.child("meals").child(mealId).child("user").set("")
-        db.child("meals").child(mealId).child("timestampUnliked").set(int(time.time()))
-        if not(areThereLikedMealsByMealPlanId(userId, mealPlanId)):
-            db.child("mealPlans").child(mealPlanId).child("user").set("")
-    else:
-        # If not liked, toggle to like
-        db.child("meals").child(mealId).child("isLiked").set(True)
-        db.child("meals").child(mealId).child("user").set(userId)
-        db.child("mealPlans").child(mealPlanId).child("user").set(userId)
-        db.child("meals").child(mealId).child("timestampLiked").set(int(time.time()))
+            # Εάν δεν υπάρχουν άλλα αποθηκευμένα γεύματα 
+            # που υπάγονται στο ίδιο πρόγραμμα διατροφής
+            # ανωνυμοποίησε το πρόγραμμα διατροφής
+            if not(areThereLikedMealsByMealPlanId(userId, mealPlanId)):
+                db.child("mealPlans").child(mealPlanId).child("user").set("")
+        else:
+            # Για την αποθήκευση
+            # Αναστροφή της λογικής τιμής isLiked του γεύματος
+            db.child("meals").child(mealId).child("isLiked").set(True)
 
+            # Συσχέτιση του χρήστη με το γεύμα
+            db.child("meals").child(mealId).child("user").set(userId)
 
-    flash("Meal saved!", "success")
+            # Συσχέτιση του χρήστη με το πρόγραμμα διατροφής
+            db.child("mealPlans").child(mealPlanId).child("user").set(userId)
+    
+        flash("Meal saved!", "success")
+    
+        current_like = db.child("meals").child(mealId).child("isLiked").get().val()
+    
+        return jsonify({"success": True, "isLiked": current_like, "message": "Meal saved!"})
+    # Διαχείριση εξαίρεσης
+    except Exception as e:
+        flash(f"Error: {str(e)}", "error")
+        debugLogMetrics(time.time(), e)
 
-    current_like = db.child("meals").child(mealId).child("isLiked").get().val()
-
-    return jsonify({"success": True, "isLiked": current_like, "message": "Meal saved!"})
 
 def orderQuery(child, orderBy, equalTo, id_token):
     FIREBASE_DB_URL = firebase_config['databaseURL']
@@ -641,6 +676,7 @@ def orderQuery(child, orderBy, equalTo, id_token):
     response.raise_for_status()
     return response.json() or {}
 
+# Endpoint - Αποθηκευμένα
 @app.route('/saved', methods=['GET'])
 def saved():
     if 'user' not in session:
@@ -649,8 +685,10 @@ def saved():
 
     user = session['user']
 
-    # Get all meals for user
+    # Λήψη όλων των γευμάτων του χρήστη
     savedMeals = orderQuery("meals", "user", user['uid'], session['user']['id_token'])
+    
+    # Ανάκτηση αγαπημένων γευμάτων 
     likedMeals = {
         meal_id: meal
             for meal_id, meal in sorted(
@@ -661,8 +699,10 @@ def saved():
             if meal.get('isLiked')
     }
 
-    # Get all meal plans for user
+    # Λήψη όλων των προγραμμάτων διατροφής του χρήστη
     savedMealPlans = orderQuery("mealPlans", "user", user['uid'], session['user']['id_token'])
+
+    # Ανάκτηση αγαπημένων προγραμμάτων διατροφής 
     likedMealPlans = {
         mp_id: mp
         for mp_id, mp in sorted(
@@ -673,29 +713,33 @@ def saved():
             if mp.get('isLiked')
     }
 
-    # Build dict mapping mealPlanId -> list of meals belonging to it (filtering from savedMeals)
+    # Χαρτογράφηση: mealPlanId -> λίστα γευμάτων που υπάγονται στο Id του προγράμματος διατροφής
     mealPlanMeals = {}
+
+    # Επανάληψη για κάθε αγαπημένο πρόγραμμα διατροφής
     for plan_id, plan_data in likedMealPlans.items():
-      meal_type_order = {'breakfast': 0, 'lunch': 1, 'dinner': 2}
+        meal_type_order = {'breakfast': 0, 'lunch': 1, 'dinner': 2}
 
-      filtered_meals = {
-          meal_id: meal
-          for meal_id, meal in sorted(
-              savedMeals.items(),
-              key=lambda item: meal_type_order.get(item[1].get('mealType'), 99)
-          )
-          if meal.get('mealPlanId') == plan_id
-      }
+        # Ανάκτηση γευμάτων που υπάγονται στο πρόγραμμα διατροφής
+        filtered_meals = {
+            meal_id: meal
+            for meal_id, meal in sorted(
+                savedMeals.items(),
+                key=lambda item: meal_type_order.get(item[1].get('mealType'), 99)
+            )
+            if meal.get('mealPlanId') == plan_id
+        }
 
-      mealPlanMeals[plan_id] = {
+        # Αποθήκευση στο mealPlanMeals 
             "mealPlan": plan_data,
             "meals": filtered_meals
-      }
+        }
 
-    # Collect available diet types from meals and meal plans
+    # Δημιουργία Set με τους Διαθέσιμους τύπους διατροφής
+    # Εισαγωγή επιλογής "All"
     availableDietTypes = set('All')
 
-    # Add diet types from all saved meals
+    # Συλλογή όλων των διαθέσιμων τύπων διατροφής από τα αποθηκευμένα γεύματα
     for meal in savedMeals.values():
         dietType = meal.get("dietType")
         if not dietType:
@@ -703,7 +747,7 @@ def saved():
         else:
             availableDietTypes.add(dietType)
 
-    # Add diet types from all saved meal plans
+    # Συλλογή όλων των διαθέσιμων τύπων διατροφής από τα αγαπημένα προγράμματα διατροφής
     for mealPlan in savedMealPlans.values():
         dietType = mealPlan.get("submissionFormId").get("diet_type")
         if not dietType:
@@ -711,18 +755,10 @@ def saved():
         else:
             availableDietTypes.add(dietType)
 
-    # Add diet types from submissionFormId inside liked meal plans (if exists and not None)
-    for mealPlan in likedMealPlans.values():
-        submissionForm = mealPlan.get('submissionFormId', {})
-        diet_type = submissionForm.get('diet_type')
-        if diet_type and diet_type != 'None':
-            availableDietTypes.add(diet_type)
-
-    # Convert set to list for template use
+    # Μετατροπή του Set σε List για να είναι συμβατό με το template
     availableDietTypes = list(availableDietTypes)
 
-    print(savedMeals)  # Debug print
-
+    # Φόρτωση σελίδας αποθηκευμένων
     return render_template(
         "saved.html",
         user=user,
