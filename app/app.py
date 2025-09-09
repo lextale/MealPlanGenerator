@@ -168,13 +168,10 @@ def add_header(response):
 def index():
      return render_template("index.html", 
                             genders=Constants.GENDERS, 
-                            activityLevels=Constants.ACTIVITY_LEVELS, 
                             healthGoals=Constants.HEALTH_GOALS, 
                             dietaryTypes=Constants.DIETARY_TYPES, 
                             foodAllergies=Constants.FOOD_ALLERGIES, 
-                            foodIntolerancies=Constants.FOOD_INTOLERANCHES, 
-                            micronutrientFocus=Constants.MICRONUTRIENT_FOCUS,
-                            cookingDifficulty=Constants.COOKING_DIFFICULTY)
+                            foodIntolerancies=Constants.FOOD_INTOLERANCES)
 
 # Συνάρτηση buildPrompt: Δημιουργεί την προτροπή για το μοντέλο
 def buildPrompt(mealtype, gender, age, diet_type, allergies, intolerances, food_to_avoid, goals, previous_meals, json_schema):
