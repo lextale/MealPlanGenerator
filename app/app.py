@@ -237,17 +237,17 @@ def getSubmitForm():
         # Πρωινό
         while(timeOut < 240 and breakfast == None):
             try:
-            mealtype = "breakfast"
-              
-            # Δημιουργία προτροπής
-            prompt = buildPrompt(mealtype, gender, age, diet_type, allergies, intolerances, food_to_avoid, goals, previous_meals, Meal.schema_json())
-            # Παραγωγή πρωινού γεύματος
-            breakfast = json.loads(hf_pipeline(prompt, prefix_allowed_tokens_fn=prefix_function)[0]['generated_text'][len(prompt):].replace("\n",""))
-            break
-        except Exception as e:
-            # Σε περίπτωση μη ορθής σύνταξης της JSON εγείρεται μία εξαίρεσή από την προσπάθεια φόρτωσής της στην μεταβλητή του εκάστοτε γεύματος
-            # Αφαιρείται ο χρόνος που σπαταλήθηκε από το υπολειπόμενο χρονικό όριο
-            timeOut = time.time() - generation_start_time
+                mealtype = "breakfast"
+                  
+                # Δημιουργία προτροπής
+                prompt = buildPrompt(mealtype, gender, age, diet_type, allergies, intolerances, food_to_avoid, goals, previous_meals, Meal.schema_json())
+                # Παραγωγή πρωινού γεύματος
+                breakfast = json.loads(hf_pipeline(prompt, prefix_allowed_tokens_fn=prefix_function)[0]['generated_text'][len(prompt):].replace("\n",""))
+                break
+            except Exception as e:
+                # Σε περίπτωση μη ορθής σύνταξης της JSON εγείρεται μία εξαίρεσή από την προσπάθεια φόρτωσής της στην μεταβλητή του εκάστοτε γεύματος
+                # Αφαιρείται ο χρόνος που σπαταλήθηκε από το υπολειπόμενο χρονικό όριο
+                timeOut = time.time() - generation_start_time
 
         # Μεσημεριανό
         while(timeOut < 240 and lunch == None):
