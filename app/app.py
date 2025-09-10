@@ -892,7 +892,7 @@ if __name__ == '__main__':
         model=model,
         tokenizer=tokenizer,
         device_map="auto",
-        pad_token_id=tokenizer.pad_token_id  # avoids warning about missing pad_token
+        pad_token_id=tokenizer.pad_token_id
     )
 
     # Συνδέουμε το ngrok στην τοπική θύρα 5000 και παίρνουμε το δημόσιο URL όπου θα είναι προσβάσιμη η εφαρμογή
